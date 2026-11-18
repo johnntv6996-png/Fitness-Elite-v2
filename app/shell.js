@@ -13,34 +13,63 @@
     var isDev = window.App && window.App.env === 'dev';
 
     root.innerHTML =
-      '<div class="fe-overlay" id="feOverlay"></div>' +
-      '<aside class="fe-sidebar" id="feSidebar">' +
-        '<div style="font-family:\'Playfair Display\',serif;font-size:1.2em;color:var(--accent);font-weight:700;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:14px;display:flex;align-items:center;gap:8px">' +
-          '<i class="ph ph-barbell"></i> FITNESS ELITE' +
+      '<div class="sidebar-overlay" id="feOverlay"></div>' +
+      '<aside class="sidebar" id="feSidebar">' +
+        '<div class="sidebar-header" id="feSideHome" style="cursor:pointer">' +
+          '<h2><i class="ph ph-barbell"></i> FITNESS ELITE</h2>' +
         '</div>' +
-        '<div id="feNavList" style="flex:1;overflow-y:auto"></div>' +
+        '<div class="sidebar-profile" id="feSideProfile">' +
+          '<div class="sidebar-profile-top">' +
+            '<div class="sidebar-profile-avatar" id="feSideAvatar"><i class="ph ph-user-circle"></i></div>' +
+            '<div class="sidebar-profile-info">' +
+              '<div class="sidebar-profile-name" id="feSideName"><span>Гость</span><i class="ph ph-pencil-simple"></i></div>' +
+              '<div class="sidebar-profile-sub">Нажми для редактирования</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="profile-level-block">' +
+            '<div class="profile-level-top">' +
+              '<div class="profile-level-left">' +
+                '<i class="ph ph-star profile-level-icon" id="feLvlIcon"></i>' +
+                '<div class="profile-level-num"><span id="feLvlNum">1</span><span class="profile-level-label">уровень</span></div>' +
+              '</div>' +
+              '<div class="profile-xp-block">' +
+                '<div class="profile-xp-text"><span>XP</span><span><strong id="feXpCur">0</strong> / <span id="feXpNeed">100</span></span></div>' +
+                '<div class="profile-xp-bar"><div class="profile-xp-fill" id="feXpFill" style="width:0%"></div></div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="sidebar-section">' +
+          '<div class="sidebar-section-title">Навигация</div>' +
+          '<div id="feNavList"></div>' +
+        '</div>' +
         (isDev
-          ? '<div style="border-top:1px solid var(--border);padding-top:10px">' +
-              '<div class="fe-nav-item" id="feDevBtn"><i class="ph ph-code"></i> Панель разработчика</div>' +
+          ? '<div class="sidebar-divider"></div><div class="sidebar-section">' +
+              '<div class="sidebar-item" id="feDevBtn"><i class="ph ph-code"></i> Панель разработчика</div>' +
             '</div>'
           : '') +
       '</aside>' +
-      '<header class="fe-header">' +
-        '<div style="display:flex;align-items:center;gap:10px">' +
-          '<button class="fe-icon-btn" id="feMenuBtn" aria-label="Меню"><i class="ph ph-list"></i></button>' +
-          '<h1 id="feLogoTitle" style="cursor:pointer;user-select:none"><i class="ph ph-barbell"></i> FITNESS ELITE</h1>' +
+      '<div class="header-wrapper">' +
+        '<div class="header">' +
+          '<div class="header-left">' +
+            '<button class="hamburger" id="feMenuBtn" aria-label="Меню"><span></span><span></span><span></span></button>' +
+            '<h1 id="feLogoTitle" style="user-select:none"><i class="ph ph-barbell"></i> FITNESS ELITE</h1>' +
+          '</div>' +
+          '<div class="header-right">' +
+            (isDev ? '<span style="font-size:0.72em;padding:2px 8px;border:1px solid var(--accent-error);border-radius:10px;color:var(--accent-error);font-weight:700">DEV</span>' : '') +
+            '<button class="theme-btn" id="feStyleBtn" title="Сменить стиль"><i class="ph ph-palette"></i></button>' +
+          '</div>' +
         '</div>' +
-        '<div style="display:flex;align-items:center;gap:8px">' +
-          (isDev ? '<span style="font-size:0.75em;padding:3px 8px;border-radius:8px;background:rgba(248,113,113,0.15);color:#f87171;border:1px solid #f87171;font-weight:700">DEV</span>' : '') +
-        '</div>' +
-      '</header>' +
-      '<main class="fe-main" id="feMain"></main>' +
-      '<div id="feToastBox" style="position:fixed;top:70px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:90vw"></div>';
+      '</div>' +
+      '<div class="main-content" id="feMain"></div>' +
+      '<div id="feToastBox" style="position:fixed;top:76px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:90vw"></div>';
 
-    document.getElementById('feMenuBtn').onclick = toggleSidebar;
-    document.getElementById('feOverlay').onclick = toggleSidebar;
+    document.getElementById('feMenuBtn').onclick = function(e) { e.stopPropagation(); toggleSidebar(); };
+    document.getElementById('feOverlay').onclick = function() { toggleSidebar(false); };
+    document.getElementById('feSideHome').onclick = function() { toggleSidebar(false); navigate('home'); };
+    document.getElementById('feStyleBtn').onclick = function(e) { e.stopPropagation(); openStylePicker(); };
+    document.getElementById('feSideProfile').onclick = function() { toggleSidebar(false); openProfileModal(); };
 
-    // Скрытый вход в DEV/PROD по 5 кликам на заголовок
     var taps = 0, tapTimer = null;
     document.getElementById('feLogoTitle').onclick = function() {
       taps++;
@@ -49,38 +78,55 @@
       if (taps >= 5) {
         taps = 0;
         var next = (window.App.env === 'dev') ? 'prod' : 'dev';
-        if (confirm('Переключить контур на ' + next.toUpperCase() + '?')) {
-          window.App.switchEnv(next);
-        }
+        if (confirm('Переключить контур на ' + next.toUpperCase() + '?')) window.App.switchEnv(next);
       }
     };
 
     if (isDev) {
-      document.getElementById('feDevBtn').onclick = function() {
-        toggleSidebar(false);
-        navigate('dev');
-      };
+      document.getElementById('feDevBtn').onclick = function() { toggleSidebar(false); navigate('dev'); };
     }
 
-    registerScreen('home', renderHomeFallback);
+    updateSidebarStats();
+    if (window.Events) {
+      Events.on('store:stats', updateSidebarStats);
+      Events.on('store:user_name', updateSidebarStats);
+    }
+
+    addNav('home', 'Главная', 'ph-house');
     registerScreen('dev', renderDevPanel);
-    renderNav();
     navigate('home');
   }
 
+  function updateSidebarStats() {
+    var nameEl = document.getElementById('feSideName');
+    if (nameEl) {
+      var nm = Store.get('user_name', '');
+      nameEl.innerHTML = '<span>' + Store.esc(nm || 'Гость') + '</span><i class="ph ph-pencil-simple"></i>';
+    }
+    if (typeof Helpers === 'undefined') return;
+    var st = Helpers.getStats();
+    var need = Helpers.xpForLevel(st.level);
+    var pct = need > 0 ? Math.min(100, Math.round((st.xp / need) * 100)) : 0;
+    var n = document.getElementById('feLvlNum'); if (n) n.textContent = st.level;
+    var c = document.getElementById('feXpCur'); if (c) c.textContent = st.xp;
+    var nd = document.getElementById('feXpNeed'); if (nd) nd.textContent = need;
+    var fl = document.getElementById('feXpFill'); if (fl) fl.style.width = pct + '%';
+  }
   function toggleSidebar(force) {
     var sb = document.getElementById('feSidebar');
     var ov = document.getElementById('feOverlay');
+    var hb = document.getElementById('feMenuBtn');
     if (!sb || !ov) return;
     var open = typeof force === 'boolean' ? force : !sb.classList.contains('open');
+    sb.classList.toggle('active', open);
     sb.classList.toggle('open', open);
-    ov.classList.toggle('open', open);
+    ov.classList.toggle('active', open);
+    if (hb) hb.classList.toggle('active', open);
+    document.body.classList.toggle('sidebar-open', open);
   }
 
   function addNav(id, label, iconClass) {
-    for (var i = 0; i < navItems.length; i++) {
-      if (navItems[i].id === id) return;
-    }
+    for (var i = 0; i < navItems.length; i++) if (navItems[i].id === id) return;
     navItems.push({ id: id, label: label, icon: iconClass || 'ph-circle' });
     renderNav();
   }
@@ -88,20 +134,13 @@
   function renderNav() {
     var box = document.getElementById('feNavList');
     if (!box) return;
-    var html = '';
-    for (var i = 0; i < navItems.length; i++) {
-      var it = navItems[i];
+    box.innerHTML = navItems.map(function(it) {
       var active = it.id === currentScreen ? ' active' : '';
-      html += '<div class="fe-nav-item' + active + '" data-screen="' + Store.esc(it.id) + '">' +
-        '<i class="ph ' + Store.esc(it.icon) + '"></i> ' + Store.esc(it.label) +
-      '</div>';
-    }
-    box.innerHTML = html;
-    box.querySelectorAll('.fe-nav-item').forEach(function(el) {
-      el.onclick = function() {
-        toggleSidebar(false);
-        navigate(el.getAttribute('data-screen'));
-      };
+      return '<div class="sidebar-item' + active + '" data-screen="' + Store.esc(it.id) + '">' +
+        '<i class="ph ' + Store.esc(it.icon) + '"></i> ' + Store.esc(it.label) + '</div>';
+    }).join('');
+    box.querySelectorAll('.sidebar-item').forEach(function(el) {
+      el.onclick = function() { toggleSidebar(false); navigate(el.getAttribute('data-screen')); };
     });
   }
 
@@ -116,134 +155,109 @@
     var main = document.getElementById('feMain');
     if (!main) return;
     var fn = screens[id];
-    if (typeof fn === 'function') {
-      main.innerHTML = '';
-      fn(main);
-    }
+    if (typeof fn === 'function') { main.innerHTML = ''; fn(main); }
   }
 
-  function renderHomeFallback(container) {
-    var env = window.App ? window.App.env.toUpperCase() : 'PROD';
-    container.innerHTML =
-      '<div class="fe-card">' +
-        '<h2 style="color:var(--accent);margin-bottom:8px;font-size:1.2em">Каркас v2 запущен</h2>' +
-        '<p style="color:var(--text-secondary);font-size:0.9em;line-height:1.5">' +
-          'Активный контур: <strong style="color:var(--accent)">' + env + '</strong>. ' +
-          'Хранилище файлов и изолированные данные готовы к подключению модулей.' +
-        '</p>' +
+  function openStylePicker() {
+    var old = document.getElementById('styleQuickPicker');
+    if (old) { old.remove(); return; }
+    var all = (typeof StyleManager !== 'undefined') ? StyleManager.getAllStyles() : [];
+    var cur = (typeof StyleManager !== 'undefined') ? StyleManager.getCurrentStyle() : 'default';
+
+    var overlay = document.createElement('div');
+    overlay.id = 'styleQuickPicker';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;display:flex;align-items:flex-end;justify-content:center';
+    var rows = all.map(function(s) {
+      var act = s.id === cur;
+      var dots = s.colors.map(function(c) { return '<span style="width:10px;height:10px;border-radius:50%;background:' + c + ';display:inline-block"></span>'; }).join('');
+      return '<div data-sid="' + Store.esc(s.id) + '" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:4px;border:1px solid ' + (act ? 'var(--accent-gold)' : 'transparent') + ';background:' + (act ? 'var(--accent-gold-dim)' : 'transparent') + '">' +
+        '<div style="display:flex;gap:3px">' + dots + '</div>' +
+        '<div style="flex:1"><div style="font-weight:600;font-size:0.9em">' + Store.esc(s.name) + '</div><div style="font-size:0.75em;opacity:0.65">' + Store.esc(s.description || '') + '</div></div>' +
+        (act ? '<i class="ph ph-check-circle" style="color:var(--accent-gold)"></i>' : '') +
       '</div>';
+    }).join('');
+
+    overlay.innerHTML =
+      '<div style="background:var(--bg-secondary);border-radius:20px 20px 0 0;border-top:1px solid var(--border-gold);width:100%;max-width:480px;max-height:70vh;overflow-y:auto;padding:16px">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
+          '<strong style="color:var(--accent-gold);font-family:var(--font-display)"><i class="ph ph-palette"></i> Тема оформления</strong>' +
+          '<button id="spClose" style="background:none;border:none;color:var(--text-secondary);font-size:1.4em;cursor:pointer"><i class="ph ph-x"></i></button>' +
+        '</div>' + rows +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    document.getElementById('spClose').onclick = function() { overlay.remove(); };
+    overlay.querySelectorAll('[data-sid]').forEach(function(el) {
+      el.onclick = function() {
+        if (typeof StyleManager !== 'undefined') StyleManager.applyStyle(el.getAttribute('data-sid'));
+        overlay.remove();
+        notify('Тема применена');
+      };
+    });
+  }
+
+  function openProfileModal() {
+    var modal = document.createElement('div');
+    modal.className = 'ex-modal';
+    modal.innerHTML =
+      '<div class="ex-modal-content" style="max-width:400px">' +
+        '<h3 style="color:var(--accent-gold);margin-bottom:12px">Профиль</h3>' +
+        '<input id="prNameInp" type="text" value="' + Store.esc(Store.get('user_name', '')) + '" placeholder="Твоё имя" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-subtle);background:var(--bg-primary);color:var(--text-primary);margin-bottom:14px">' +
+        '<div style="display:flex;gap:8px;justify-content:flex-end">' +
+          '<button class="btn btn-secondary" id="prCancel">Отмена</button>' +
+          '<button class="btn btn-primary" id="prSave">Сохранить</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(modal);
+    document.getElementById('prCancel').onclick = function() { modal.remove(); };
+    document.getElementById('prSave').onclick = function() {
+      Store.set('user_name', document.getElementById('prNameInp').value.trim());
+      modal.remove();
+      notify('Профиль сохранён');
+    };
   }
 
   function renderDevPanel(container) {
     Promise.all([FileDB.getMeta('manifest_dev'), FileDB.getAllFiles('dev')]).then(function(res) {
-      var manifest = res[0] || { version: '0.1.0-dev', files: [] };
-      var files = res[1] || [];
-
+      var manifest = res || { version: '0.1.4-dev', files: [] };
+      var files = res || [];
       var listHtml = files.map(function(f, idx) {
-        return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.85em">' +
-          '<div style="min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + Store.esc(f.path) + '</div>' +
-          '<div style="display:flex;gap:6px;flex-shrink:0">' +
-            '<button class="fe-icon-btn" data-edit="' + idx + '" title="Редактировать" style="width:32px;height:32px;font-size:1em"><i class="ph ph-pencil-simple"></i></button>' +
-            '<button class="fe-icon-btn" data-dl="' + idx + '" title="Скачать файл" style="width:32px;height:32px;font-size:1em"><i class="ph ph-download-simple"></i></button>' +
-          '</div>' +
-        '</div>';
+        return '<div class="module-item"><span style="font-size:0.9em">' + Store.esc(f.path) + '</span>' +
+          '<div style="display:flex;gap:6px"><button class="btn btn-secondary" data-edit="' + idx + '" style="padding:6px 12px">Править</button></div></div>';
       }).join('');
-
       container.innerHTML =
-        '<div class="fe-card">' +
-          '<h2 style="color:var(--accent);margin-bottom:12px;font-size:1.2em">Панель разработчика (DEV)</h2>' +
+        '<div class="dev-panel">' +
+          '<h3 style="color:var(--accent-gold);margin-bottom:14px">Панель разработчика (DEV)</h3>' +
           '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">' +
-            '<button class="fe-btn" id="devNewFileBtn"><i class="ph ph-plus"></i> Новый файл</button>' +
-            '<button class="fe-btn fe-btn-sec" id="devCopyProdBtn"><i class="ph ph-copy"></i> Копия из PROD</button>' +
-            '<button class="fe-btn fe-btn-sec" id="devToProdBtn"><i class="ph ph-arrow-left"></i> В PROD</button>' +
-          '</div>' +
-          '<div style="font-weight:600;margin-bottom:8px;font-size:0.9em">Файлы в песочнице DEV (' + files.length + '):</div>' +
-          (listHtml || '<div style="opacity:0.6;font-size:0.9em">Пусто. Нажми «Копия из PROD» или создай новый файл.</div>') +
-        '</div>' +
-        '<div id="devEditorWrap"></div>';
-
+            '<button class="btn btn-primary" id="devCopyProdBtn">Копия из PROD</button>' +
+            '<button class="btn btn-secondary" id="devToProdBtn">В режим PROD</button>' +
+          '</div>' + listHtml +
+        '</div><div id="devEditorWrap"></div>';
       document.getElementById('devToProdBtn').onclick = function() { window.App.switchEnv('prod'); };
-
       document.getElementById('devCopyProdBtn').onclick = function() {
-        FileDB.copyProdToDev().then(function() {
-          notify('Скопировано из PROD!');
-          renderDevPanel(container);
-        }).catch(function(e) { notify(e.message, true); });
+        FileDB.copyProdToDev().then(function() { notify('Скопировано'); renderDevPanel(container); }).catch(function(e) { notify(e.message, true); });
       };
-
-      document.getElementById('devNewFileBtn').onclick = function() {
-        openDevEditor(container, manifest, null);
-      };
-
-      container.querySelectorAll('[data-edit]').forEach(function(btn) {
-        btn.onclick = function() {
-          openDevEditor(container, manifest, files[parseInt(btn.getAttribute('data-edit'), 10)]);
-        };
-      });
-
-      container.querySelectorAll('[data-dl]').forEach(function(btn) {
-        btn.onclick = function() {
-          var f = files[parseInt(btn.getAttribute('data-dl'), 10)];
-          var blob = new Blob([f.content], { type: 'text/plain;charset=utf-8' });
-          var a = document.createElement('a');
-          a.href = URL.createObjectURL(blob);
-          a.download = f.path.split('/').pop();
-          a.click();
+      container.querySelectorAll('[data-edit]').forEach(function(b) {
+        b.onclick = function() {
+          var f = files[parseInt(b.getAttribute('data-edit'), 10)];
+          document.getElementById('devEditorWrap').innerHTML =
+            '<div class="dev-panel"><h4 style="color:var(--accent-gold);margin-bottom:8px">' + Store.esc(f.path) + '</h4>' +
+            '<textarea id="edCode" rows="12" style="width:100%;padding:10px;background:#000;color:#4ade80;font-family:monospace">' + Store.esc(f.content) + '</textarea>' +
+            '<button class="btn btn-primary" id="edSave" style="margin-top:10px">Сохранить</button></div>';
+          document.getElementById('edSave').onclick = function() {
+            f.content = document.getElementById('edCode').value;
+            FileDB.saveSingleFile('dev', f).then(function() { location.reload(); });
+          };
         };
       });
     });
-  }
-
-  function openDevEditor(container, manifest, fileObj) {
-    var wrap = document.getElementById('devEditorWrap');
-    if (!wrap) return;
-    var isNew = !fileObj;
-    var pathVal = isNew ? 'modules/' : fileObj.path;
-    var typeVal = isNew ? 'js' : fileObj.type;
-    var contentVal = isNew ? '' : fileObj.content;
-
-    wrap.innerHTML =
-      '<div class="fe-card" style="border-color:var(--accent)">' +
-        '<h3 style="color:var(--accent);margin-bottom:10px;font-size:1em">' + (isNew ? 'Новый файл' : 'Редактор: ' + Store.esc(pathVal)) + '</h3>' +
-        '<div style="display:flex;gap:8px;margin-bottom:10px">' +
-          '<input id="edPath" type="text" value="' + Store.esc(pathVal) + '" ' + (isNew ? '' : 'readonly') + ' placeholder="modules/welcome.js" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-primary);color:#fff;font-family:\'JetBrains Mono\',monospace;font-size:0.85em">' +
-          '<select id="edType" ' + (isNew ? '' : 'disabled') + ' style="padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-primary);color:#fff">' +
-            '<option value="js"' + (typeVal === 'js' ? ' selected' : '') + '>JS</option>' +
-            '<option value="css"' + (typeVal === 'css' ? ' selected' : '') + '>CSS</option>' +
-          '</select>' +
-        '</div>' +
-        '<textarea id="edCode" rows="14" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#050508;color:#4ade80;font-family:\'JetBrains Mono\',monospace;font-size:0.82em;line-height:1.4;resize:vertical">' + Store.esc(contentVal) + '</textarea>' +
-        '<div style="display:flex;gap:8px;margin-top:10px">' +
-          '<button class="fe-btn" id="edSaveBtn"><i class="ph ph-floppy-disk"></i> Сохранить и перезагрузить</button>' +
-          '<button class="fe-btn fe-btn-sec" id="edCancelBtn">Отмена</button>' +
-        '</div>' +
-      '</div>';
-
-    document.getElementById('edCancelBtn').onclick = function() { wrap.innerHTML = ''; };
-    document.getElementById('edSaveBtn').onclick = function() {
-      var p = document.getElementById('edPath').value.trim();
-      var t = document.getElementById('edType').value;
-      var code = document.getElementById('edCode').value;
-      if (!p) { notify('Укажи путь к файлу', true); return; }
-
-      var exists = manifest.files.some(function(item) { return item.path === p; });
-      if (!exists) manifest.files.push({ path: p, type: t, required: false });
-
-      FileDB.saveSingleFile('dev', {
-        path: p, type: t, id: null, required: false, content: code, version: manifest.version
-      }).then(function() {
-        return FileDB.setMeta('manifest_dev', manifest);
-      }).then(function() {
-        location.reload();
-      });
-    };
   }
 
   function notify(msg, isError) {
     var box = document.getElementById('feToastBox');
     if (!box) return;
     var el = document.createElement('div');
-    el.style.cssText = 'padding:12px 16px;border-radius:10px;background:' + (isError ? '#dc2626' : '#16a34a') + ';color:#fff;font-size:0.9em;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,0.4)';
+    el.style.cssText = 'padding:12px 16px;border-radius:12px;background:' + (isError ? 'var(--accent-error)' : 'var(--accent-success)') + ';color:#000;font-weight:600;font-size:0.9em;box-shadow:var(--shadow-modal)';
     el.textContent = msg;
     box.appendChild(el);
     setTimeout(function() { el.remove(); }, 3000);
@@ -253,28 +267,13 @@
     if (document.getElementById('feUpdToast')) return;
     var el = document.createElement('div');
     el.id = 'feUpdToast';
-    el.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--bg-secondary);border:1px solid var(--accent);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 30px rgba(0,0,0,0.6);max-width:92vw';
-    el.innerHTML =
-      '<div style="flex:1;font-size:0.88em"><strong style="color:var(--accent)">Доступна v' + Store.esc(remoteManifest.version) + '</strong><br><span style="opacity:0.7">Текущая: ' + Store.esc(curVer) + '</span></div>' +
-      '<button class="fe-btn" id="feUpdRun" style="padding:8px 14px;font-size:0.85em">Обновить</button>' +
-      '<button id="feUpdClose" style="background:none;border:none;color:var(--text-secondary);font-size:1.3em;cursor:pointer">×</button>';
+    el.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--bg-secondary);border:1px solid var(--accent-gold);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow-modal);max-width:92vw';
+    el.innerHTML = '<div style="flex:1;font-size:0.88em"><strong style="color:var(--accent-gold)">Доступна v' + Store.esc(remoteManifest.version) + '</strong></div>' +
+      '<button class="btn btn-primary" id="feUpdRun" style="padding:8px 14px">Обновить</button>';
     document.body.appendChild(el);
-
-    document.getElementById('feUpdClose').onclick = function() { el.remove(); };
-    document.getElementById('feUpdRun').onclick = function() {
-      this.disabled = true;
-      this.textContent = '...';
-      onApply().catch(function(e) { notify('Ошибка: ' + e.message, true); el.remove(); });
-    };
+    document.getElementById('feUpdRun').onclick = function() { onApply().catch(function(e) { notify(e.message, true); }); };
   }
 
-  window.Shell = {
-    addNav: addNav,
-    registerScreen: registerScreen,
-    navigate: navigate,
-    notify: notify,
-    showUpdateToast: showUpdateToast
-  };
-
+  window.Shell = { addNav: addNav, registerScreen: registerScreen, navigate: navigate, notify: notify, showUpdateToast: showUpdateToast };
   buildShell();
 })();

@@ -1,10 +1,20 @@
 {
-  "version": "0.1.3",
+  "version": "0.1.4",
   "files": [
-    { "path": "assets/base.css", "type": "css", "required": true },
+    { "path": "styles/base.css", "type": "css", "required": true },
+    { "path": "styles/components.css", "type": "css", "required": true },
+    { "path": "styles/builtin/default.css", "type": "css", "required": true },
+    { "path": "styles/builtin/light-classic.css", "type": "css", "required": false },
+    { "path": "styles/builtin/neon.css", "type": "css", "required": false },
+    { "path": "styles/builtin/minimal.css", "type": "css", "required": false },
+    { "path": "styles/builtin/cyber.css", "type": "css", "required": false },
+    { "path": "styles/builtin/material.css", "type": "css", "required": false },
+    { "path": "styles/builtin/glass.css", "type": "css", "required": false },
+
     { "path": "core/events.js", "type": "js", "required": true },
     { "path": "core/store.js", "type": "js", "required": true },
     { "path": "core/helpers.js", "type": "js", "required": true },
+    { "path": "core/styles.js", "type": "js", "required": true },
     { "path": "app/shell.js", "type": "js", "required": true },
     { "path": "modules/welcome.js", "type": "module", "id": "welcome", "required": true },
     { "path": "modules/exercises.js", "type": "module", "id": "exercises", "required": false }
