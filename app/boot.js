@@ -2,7 +2,14 @@
 (function() {
   'use strict';
 
-  var GITHUB_BASE = 'https://githubusercontent.com';
+  var GITHUB_BASE = [
+    'https:/',
+    '://githubusercontent.com',
+    'johnntv6996-png',
+    'Fitness-Elite-v2',
+    'main',
+    ''
+  ].join('/');
   var ENV_KEY = 'fe_v2_env';
 
   function detectEnv() {
@@ -16,7 +23,6 @@
 
   var CURRENT_ENV = detectEnv();
 
-  // Единый реестр приложения и модулей
   var _modules = new Map();
   window.App = {
     env: CURRENT_ENV,
@@ -156,8 +162,8 @@
     var metaKey = 'manifest_' + CURRENT_ENV;
     Promise.all([FileDB.getMeta(metaKey), FileDB.getAllFiles(CURRENT_ENV)])
       .then(function(res) {
-        var savedManifest = res;
-        var savedFiles = res;
+        var savedManifest = res[0];
+        var savedFiles = res[1];
 
         if (savedManifest && Array.isArray(savedManifest.files) && savedFiles && savedFiles.length > 0) {
           return mountBundle(savedManifest, savedFiles).then(function() { checkUpdates(savedManifest); });
