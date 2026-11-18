@@ -1,9 +1,10 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "files": [
     { "path": "assets/base.css", "type": "css", "required": true },
     { "path": "core/events.js", "type": "js", "required": true },
     { "path": "core/store.js", "type": "js", "required": true },
+    { "path": "core/helpers.js", "type": "js", "required": true },
     { "path": "app/shell.js", "type": "js", "required": true }
   ]
 }
