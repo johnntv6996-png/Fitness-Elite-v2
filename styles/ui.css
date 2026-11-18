@@ -1,0 +1,107 @@
+/* styles/ui.css */
+/* Единые компоненты интерфейса, адаптирующиеся под все 7 тем */
+
+.fe-page {
+  padding: 6px 4px 24px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.fe-page-title {
+  font-family: var(--font-display);
+  font-size: 1.75em;
+  margin-bottom: 16px;
+  color: var(--accent-gold);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fe-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.fe-card-gold {
+  border-color: var(--border-gold);
+  box-shadow: var(--shadow-gold);
+}
+
+.fe-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-gold);
+}
+
+.fe-input,
+.fe-select,
+.fe-textarea {
+  width: 100%;
+  padding: 11px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  font-size: 0.95em;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.fe-input:focus,
+.fe-select:focus,
+.fe-textarea:focus {
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 0 2px var(--accent-gold-dim);
+}
+
+.fe-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 0.88em;
+  color: var(--text-secondary);
+}
+
+.fe-chip {
+  padding: 8px 14px;
+  font-size: 0.85em;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.fe-chip.active {
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+  color: var(--text-on-accent);
+  border-color: var(--accent-gold);
+  font-weight: 600;
+}
+
+.fe-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.fe-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .fe-page-title { font-size: 1.45em; }
+  .fe-card { padding: 14px; }
+  .fe-grid-2 { grid-template-columns: 1fr; }
+}
