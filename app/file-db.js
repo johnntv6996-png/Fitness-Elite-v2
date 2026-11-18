@@ -106,5 +106,3 @@
     copyProdToDev: copyProdToDev
   };
 })();
-
-})();
