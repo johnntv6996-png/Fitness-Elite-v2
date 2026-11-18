@@ -1,5 +1,5 @@
 {
-  "version": "0.1.6",
+  "version": "0.1.7",
   "files": [
     { "path": "styles/base.css", "type": "css", "required": true },
     { "path": "styles/components.css", "type": "css", "required": true },

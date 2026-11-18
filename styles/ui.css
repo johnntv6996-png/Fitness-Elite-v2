@@ -105,3 +105,23 @@
   .fe-card { padding: 14px; }
   .fe-grid-2 { grid-template-columns: 1fr; }
 }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fillBar {
+  from { width: 0%; }
+}
+@keyframes glowPulse {
+  0%, 100% { box-shadow: var(--shadow-card); }
+  50% { box-shadow: var(--shadow-gold); }
+}
+
+.w-fade { animation: fadeInUp 0.45s ease-out both; }
+.w-delay-1 { animation-delay: 0.08s; }
+.w-delay-2 { animation-delay: 0.16s; }
+.w-delay-3 { animation-delay: 0.24s; }
+.w-glow { animation: glowPulse 2.5s ease-in-out infinite; }
+.w-xp-bar { animation: fillBar 1s ease-out both; }
+.w-pulse { animation: pulse 2s ease-in-out infinite; display: inline-block; }
