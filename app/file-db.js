@@ -80,11 +80,31 @@
     });
   }
 
+  function saveSingleFile(env, fileObj) {
+    return saveFiles(env, [fileObj]);
+  }
+
+  function copyProdToDev() {
+    return Promise.all([getMeta('manifest_prod'), getAllFiles('prod')])
+      .then(function(res) {
+        if (!res[0] || !res[1].length) throw new Error('В PROD нет файлов для копирования');
+        return clearEnv('dev').then(function() {
+          return saveFiles('dev', res[1]);
+        }).then(function() {
+          return setMeta('manifest_dev', JSON.parse(JSON.stringify(res[0])));
+        });
+      });
+  }
+
   window.FileDB = {
     getMeta: getMeta,
     setMeta: setMeta,
     saveFiles: saveFiles,
+    saveSingleFile: saveSingleFile,
     getAllFiles: getAllFiles,
-    clearEnv: clearEnv
+    clearEnv: clearEnv,
+    copyProdToDev: copyProdToDev
   };
+})();
+
 })();

@@ -135,34 +135,108 @@
   }
 
   function renderDevPanel(container) {
-    FileDB.getAllFiles(window.App.env).then(function(files) {
-      var listHtml = files.map(function(f) {
-        return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:0.85em">' +
-          '<span>' + Store.esc(f.path) + '</span>' +
-          '<span style="color:var(--success)">v' + Store.esc(f.version) + '</span>' +
+    Promise.all([FileDB.getMeta('manifest_dev'), FileDB.getAllFiles('dev')]).then(function(res) {
+      var manifest = res[0] || { version: '0.1.0-dev', files: [] };
+      var files = res[1] || [];
+
+      var listHtml = files.map(function(f, idx) {
+        return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);font-size:0.85em">' +
+          '<div style="min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + Store.esc(f.path) + '</div>' +
+          '<div style="display:flex;gap:6px;flex-shrink:0">' +
+            '<button class="fe-icon-btn" data-edit="' + idx + '" title="Редактировать" style="width:32px;height:32px;font-size:1em"><i class="ph ph-pencil-simple"></i></button>' +
+            '<button class="fe-icon-btn" data-dl="' + idx + '" title="Скачать файл" style="width:32px;height:32px;font-size:1em"><i class="ph ph-download-simple"></i></button>' +
+          '</div>' +
         '</div>';
       }).join('');
 
       container.innerHTML =
         '<div class="fe-card">' +
-          '<h2 style="color:var(--accent);margin-bottom:12px">Панель разработчика (DEV)</h2>' +
+          '<h2 style="color:var(--accent);margin-bottom:12px;font-size:1.2em">Панель разработчика (DEV)</h2>' +
           '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">' +
-            '<button class="fe-btn" id="devClearBtn"><i class="ph ph-trash"></i> Сбросить кэш файлов</button>' +
-            '<button class="fe-btn fe-btn-sec" id="devToProdBtn"><i class="ph ph-arrow-left"></i> В режим PROD</button>' +
+            '<button class="fe-btn" id="devNewFileBtn"><i class="ph ph-plus"></i> Новый файл</button>' +
+            '<button class="fe-btn fe-btn-sec" id="devCopyProdBtn"><i class="ph ph-copy"></i> Копия из PROD</button>' +
+            '<button class="fe-btn fe-btn-sec" id="devToProdBtn"><i class="ph ph-arrow-left"></i> В PROD</button>' +
           '</div>' +
-          '<div style="font-weight:600;margin-bottom:8px">Файлы в IndexedDB (' + files.length + '):</div>' +
-          (listHtml || '<div style="opacity:0.6">Пусто</div>') +
-        '</div>';
+          '<div style="font-weight:600;margin-bottom:8px;font-size:0.9em">Файлы в песочнице DEV (' + files.length + '):</div>' +
+          (listHtml || '<div style="opacity:0.6;font-size:0.9em">Пусто. Нажми «Копия из PROD» или создай новый файл.</div>') +
+        '</div>' +
+        '<div id="devEditorWrap"></div>';
 
-      document.getElementById('devClearBtn').onclick = function() {
-        FileDB.clearEnv(window.App.env).then(function() {
-          return FileDB.setMeta('manifest_' + window.App.env, null);
-        }).then(function() { location.reload(); });
+      document.getElementById('devToProdBtn').onclick = function() { window.App.switchEnv('prod'); };
+
+      document.getElementById('devCopyProdBtn').onclick = function() {
+        FileDB.copyProdToDev().then(function() {
+          notify('Скопировано из PROD!');
+          renderDevPanel(container);
+        }).catch(function(e) { notify(e.message, true); });
       };
-      document.getElementById('devToProdBtn').onclick = function() {
-        window.App.switchEnv('prod');
+
+      document.getElementById('devNewFileBtn').onclick = function() {
+        openDevEditor(container, manifest, null);
       };
+
+      container.querySelectorAll('[data-edit]').forEach(function(btn) {
+        btn.onclick = function() {
+          openDevEditor(container, manifest, files[parseInt(btn.getAttribute('data-edit'), 10)]);
+        };
+      });
+
+      container.querySelectorAll('[data-dl]').forEach(function(btn) {
+        btn.onclick = function() {
+          var f = files[parseInt(btn.getAttribute('data-dl'), 10)];
+          var blob = new Blob([f.content], { type: 'text/plain;charset=utf-8' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = f.path.split('/').pop();
+          a.click();
+        };
+      });
     });
+  }
+
+  function openDevEditor(container, manifest, fileObj) {
+    var wrap = document.getElementById('devEditorWrap');
+    if (!wrap) return;
+    var isNew = !fileObj;
+    var pathVal = isNew ? 'modules/' : fileObj.path;
+    var typeVal = isNew ? 'js' : fileObj.type;
+    var contentVal = isNew ? '' : fileObj.content;
+
+    wrap.innerHTML =
+      '<div class="fe-card" style="border-color:var(--accent)">' +
+        '<h3 style="color:var(--accent);margin-bottom:10px;font-size:1em">' + (isNew ? 'Новый файл' : 'Редактор: ' + Store.esc(pathVal)) + '</h3>' +
+        '<div style="display:flex;gap:8px;margin-bottom:10px">' +
+          '<input id="edPath" type="text" value="' + Store.esc(pathVal) + '" ' + (isNew ? '' : 'readonly') + ' placeholder="modules/welcome.js" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-primary);color:#fff;font-family:\'JetBrains Mono\',monospace;font-size:0.85em">' +
+          '<select id="edType" ' + (isNew ? '' : 'disabled') + ' style="padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-primary);color:#fff">' +
+            '<option value="js"' + (typeVal === 'js' ? ' selected' : '') + '>JS</option>' +
+            '<option value="css"' + (typeVal === 'css' ? ' selected' : '') + '>CSS</option>' +
+          '</select>' +
+        '</div>' +
+        '<textarea id="edCode" rows="14" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#050508;color:#4ade80;font-family:\'JetBrains Mono\',monospace;font-size:0.82em;line-height:1.4;resize:vertical">' + Store.esc(contentVal) + '</textarea>' +
+        '<div style="display:flex;gap:8px;margin-top:10px">' +
+          '<button class="fe-btn" id="edSaveBtn"><i class="ph ph-floppy-disk"></i> Сохранить и перезагрузить</button>' +
+          '<button class="fe-btn fe-btn-sec" id="edCancelBtn">Отмена</button>' +
+        '</div>' +
+      '</div>';
+
+    document.getElementById('edCancelBtn').onclick = function() { wrap.innerHTML = ''; };
+    document.getElementById('edSaveBtn').onclick = function() {
+      var p = document.getElementById('edPath').value.trim();
+      var t = document.getElementById('edType').value;
+      var code = document.getElementById('edCode').value;
+      if (!p) { notify('Укажи путь к файлу', true); return; }
+
+      var exists = manifest.files.some(function(item) { return item.path === p; });
+      if (!exists) manifest.files.push({ path: p, type: t, required: false });
+
+      FileDB.saveSingleFile('dev', {
+        path: p, type: t, id: null, required: false, content: code, version: manifest.version
+      }).then(function() {
+        return FileDB.setMeta('manifest_dev', manifest);
+      }).then(function() {
+        location.reload();
+      });
+    };
   }
 
   function notify(msg, isError) {
