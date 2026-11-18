@@ -42,50 +42,43 @@
 
     var circleHtml = '';
     if (dayClosed) {
-      circleHtml = '<button id="wStartBtn" class="start-circle" disabled style="opacity:0.65;cursor:not-allowed">' +
-        '<i class="ph ph-check-circle"></i><span>Готово</span><small>день закрыт</small></button>';
+      circleHtml = '<button id="wStartBtn" class="start-circle" disabled style="opacity:0.65"><i class="ph ph-check-circle"></i><span>Готово</span><small>день закрыт</small></button>';
     } else if (daySkipped) {
-      circleHtml = '<button id="wStartBtn" class="start-circle" style="border-color:var(--accent-warning)">' +
-        '<i class="ph ph-arrow-counterclockwise"></i><span>Вернуться</span><small>передумал?</small></button>';
+      circleHtml = '<button id="wStartBtn" class="start-circle" style="border-color:var(--accent-warning)"><i class="ph ph-arrow-counterclockwise"></i><span>Вернуться</span><small>передумал?</small></button>';
     } else if (exCount > 0) {
-      circleHtml = '<button id="wStartBtn" class="start-circle">' +
-        '<i class="ph ph-play-circle"></i><span>Начать</span><small>' + exCount + ' упр.</small></button>';
+      circleHtml = '<button id="wStartBtn" class="start-circle"><i class="ph ph-play-circle"></i><span>Начать</span><small>' + exCount + ' упр.</small></button>';
     } else {
-      circleHtml = '<button id="wPlanBtn" class="start-circle">' +
-        '<i class="ph ph-calendar-plus"></i><span>План</span><small>настроить</small></button>';
+      circleHtml = '<button id="wPlanBtn" class="start-circle"><i class="ph ph-calendar-plus"></i><span>План</span><small>настроить</small></button>';
     }
 
     var statusHtml = '';
     if (daySkipped) {
-      statusHtml = '<div class="fe-card w-fade" style="border-left:3px solid var(--accent-error);background:rgba(248,113,113,0.08);font-size:0.9em">' +
-        '<strong style="color:var(--accent-error)">День пропущен</strong><div style="opacity:0.75;font-size:0.85em;margin-top:2px">Нажми «Вернуться», если готов тренироваться</div></div>';
+      statusHtml = '<div class="card card-error-left"><strong style="color:var(--accent-error)">День пропущен</strong><div class="text-small">Нажми «Вернуться», если готов тренироваться</div></div>';
     } else if (dayClosed) {
-      statusHtml = '<div class="fe-card w-fade" style="border-left:3px solid var(--accent-success);background:rgba(74,222,128,0.08);font-size:0.9em">' +
-        '<strong style="color:var(--accent-success)">Тренировка проведена</strong><div style="opacity:0.75;font-size:0.85em;margin-top:2px">Отличная работа сегодня!</div></div>';
+      statusHtml = '<div class="card card-success-left"><strong style="color:var(--accent-success)">Тренировка проведена</strong><div class="text-small">Отличная работа сегодня!</div></div>';
     }
 
     container.innerHTML =
-      '<div style="padding:4px;max-width:500px;margin:0 auto">' +
-        '<div class="fe-card fe-card-gold w-fade w-glow">' +
+      '<div class="screen-wrap narrow">' +
+        '<div class="card card-gold">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
             '<div style="display:flex;align-items:center;gap:10px">' +
-              '<i class="ph ph-star w-pulse" style="font-size:1.8em;color:var(--accent-gold)"></i>' +
-              '<span style="font-size:1.8em;font-weight:bold;color:var(--accent-gold);line-height:1">' + stats.level + '</span>' +
-              '<span style="font-size:0.75em;opacity:0.7">уровень</span>' +
+              '<i class="ph ph-star" style="font-size:1.8em;color:var(--accent-gold)"></i>' +
+              '<span style="font-size:1.8em;font-weight:bold;color:var(--accent-gold)">' + stats.level + '</span>' +
+              '<span class="text-small">уровень</span>' +
             '</div>' +
-            '<div style="text-align:right"><div style="font-size:0.75em;opacity:0.7">XP</div><div style="font-size:1em;font-weight:bold">' + stats.xp + '<span style="font-size:0.7em;opacity:0.6">/' + xpNeeded + '</span></div></div>' +
+            '<div><strong>' + stats.xp + '</strong> <span class="text-small">/ ' + xpNeeded + ' XP</span></div>' +
           '</div>' +
-          '<div style="height:6px;background:rgba(0,0,0,0.25);border-radius:3px;overflow:hidden;border:1px solid var(--border-subtle)">' +
-            '<div class="w-xp-bar" style="height:100%;width:' + xpPct + '%;background:linear-gradient(90deg,var(--accent-gold),var(--accent-gold-light));border-radius:3px"></div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="fe-card w-fade w-delay-1" style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
-          '<div><div style="font-size:1.1em;font-weight:600;color:var(--accent-gold)">' + greeting + '</div>' +
-          '<div style="font-size:0.85em;opacity:0.7;margin-top:2px">Сегодня <strong>' + esc(dayName) + '</strong></div></div>' +
-          '<div style="font-size:0.8em;color:var(--accent-gold)"><i class="ph ph-list-checks"></i> ' + (exCount > 0 ? exCount + ' упр.' : 'нет плана') + '</div>' +
+          '<div class="xp-bar-track"><div class="xp-bar-fill" style="width:' + xpPct + '%"></div></div>' +
         '</div>' +
 
-        '<div class="w-fade w-delay-2" style="display:flex;flex-direction:column;align-items:center;gap:16px;margin:20px 0">' +
+        '<div class="card" style="display:flex;justify-content:space-between;align-items:center">' +
+          '<div><div style="font-size:1.1em;font-weight:600;color:var(--accent-gold)">' + greeting + '</div>' +
+          '<div class="text-small">Сегодня <strong>' + esc(dayName) + '</strong></div></div>' +
+          '<div style="font-size:0.85em;color:var(--accent-gold)"><i class="ph ph-list-checks"></i> ' + (exCount > 0 ? exCount + ' упр.' : 'нет плана') + '</div>' +
+        '</div>' +
+
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;margin:20px 0">' +
           circleHtml +
           '<div style="display:flex;gap:8px;width:100%;max-width:320px">' +
             '<button class="btn btn-secondary" id="wLaterBtn" style="flex:1" ' + (dayClosed ? 'disabled' : '') + '><i class="ph ph-clock"></i> Позже</button>' +
@@ -95,50 +88,35 @@
 
         statusHtml +
 
-        '<div class="fe-grid-3 w-fade w-delay-2" style="margin:16px 0">' +
-          '<div class="fe-card fe-card-hover" style="text-align:center;margin:0;padding:12px 8px"><i class="ph ph-flame w-pulse" style="font-size:1.5em;color:var(--accent-gold)"></i><div style="font-size:1.3em;font-weight:bold;color:var(--accent-gold);margin-top:4px">' + stats.streak + '</div><div style="font-size:0.7em;opacity:0.7">стрик</div></div>' +
-          '<div class="fe-card fe-card-hover" style="text-align:center;margin:0;padding:12px 8px"><i class="ph ph-barbell" style="font-size:1.5em;color:var(--accent-gold)"></i><div style="font-size:1.3em;font-weight:bold;color:var(--accent-gold);margin-top:4px">' + (stats.yes || 0) + '</div><div style="font-size:0.7em;opacity:0.7">тренировок</div></div>' +
-          '<div class="fe-card fe-card-hover" style="text-align:center;margin:0;padding:12px 8px"><i class="ph ph-lightning" style="font-size:1.5em;color:var(--accent-gold)"></i><div style="font-size:1.3em;font-weight:bold;color:var(--accent-gold);margin-top:4px">' + totalXp + '</div><div style="font-size:0.7em;opacity:0.7">всего XP</div></div>' +
+        '<div class="stat-grid-3">' +
+          '<div class="stat-mini"><i class="ph ph-flame"></i><div class="val">' + stats.streak + '</div><div class="lbl-s">стрик</div></div>' +
+          '<div class="stat-mini"><i class="ph ph-barbell"></i><div class="val">' + (stats.yes || 0) + '</div><div class="lbl-s">тренировок</div></div>' +
+          '<div class="stat-mini"><i class="ph ph-lightning"></i><div class="val">' + totalXp + '</div><div class="lbl-s">всего XP</div></div>' +
         '</div>' +
 
-        '<div class="fe-card w-fade w-delay-3" style="border-left:3px solid var(--accent-gold);font-size:0.9em;display:flex;align-items:center;gap:10px">' +
+        '<div class="card card-accent-left" style="display:flex;align-items:center;gap:10px">' +
           '<i class="ph ' + mot.icon + '" style="font-size:1.3em;color:var(--accent-gold)"></i>' +
-          '<div style="color:var(--accent-gold);font-weight:600">' + esc(mot.text) + '</div>' +
+          '<strong style="color:var(--accent-gold)">' + esc(mot.text) + '</strong>' +
         '</div>' +
-
-        '<details class="fe-card w-fade w-delay-3" style="font-size:0.82em;cursor:pointer">' +
-          '<summary style="font-weight:600;color:var(--accent-gold);display:flex;align-items:center;gap:8px"><i class="ph ph-info"></i> Как получать XP</summary>' +
-          '<div style="margin-top:10px;line-height:1.7;opacity:0.85">' +
-            '<div><i class="ph ph-check" style="color:var(--accent-success)"></i> Подход: <strong>+5 XP</strong></div>' +
-            '<div><i class="ph ph-warning-circle" style="color:var(--accent-warning)"></i> Частично: <strong>+3 XP</strong></div>' +
-            '<div><i class="ph ph-flag-checkered" style="color:var(--accent-success)"></i> Упражнение: <strong>+15 XP</strong></div>' +
-            '<div><i class="ph ph-trophy" style="color:var(--accent-success)"></i> День: <strong>+20 XP</strong></div>' +
-            '<div><i class="ph ph-chart-bar" style="color:var(--accent-success)"></i> Опрос: <strong>+10 XP</strong></div>' +
-          '</div>' +
-        '</details>' +
       '</div>';
 
     var planBtn = document.getElementById('wPlanBtn');
-    if (planBtn) {
-      planBtn.onclick = function() {
-        if (App.getModule('plan')) Shell.navigate('plan');
-        else Shell.notify('Модуль «План» ещё не подключён', true);
-      };
-    }
+    if (planBtn) planBtn.onclick = function() {
+      if (App.getModule('plan')) Shell.navigate('plan');
+      else Shell.notify('Модуль «План» ещё не подключён', true);
+    };
 
     var startBtn = document.getElementById('wStartBtn');
-    if (startBtn && !dayClosed) {
-      startBtn.onclick = function() {
-        if (daySkipped) {
-          if (!confirm('Отменить пропуск и начать тренировку?')) return;
-          todayRec.skipped = false;
-          Store.set('history', history);
-        }
-        var workout = App.getModule('workout');
-        if (workout && workout.open) workout.open();
-        else Shell.notify('Модуль «Тренировка» ещё не подключён', true);
-      };
-    }
+    if (startBtn && !dayClosed) startBtn.onclick = function() {
+      if (daySkipped) {
+        if (!confirm('Отменить пропуск и начать тренировку?')) return;
+        todayRec.skipped = false;
+        Store.set('history', history);
+      }
+      var workout = App.getModule('workout');
+      if (workout && workout.open) workout.open();
+      else Shell.notify('Модуль «Тренировка» ещё не подключён', true);
+    };
 
     document.getElementById('wLaterBtn').onclick = function() {
       if (stats.lastLaterDate === todayStr) { Shell.notify('Уже напоминали сегодня'); return; }
@@ -152,11 +130,8 @@
       if (daySkipped) { Shell.notify('День уже отмечен как пропущенный'); return; }
       stats.no = (stats.no || 0) + 1;
       Store.set('stats', stats);
-      if (!todayRec) {
-        history.push({ date: todayStr, dayName: dayName, exercises: [], details: [], skipped: true });
-      } else {
-        todayRec.skipped = true;
-      }
+      if (!todayRec) history.push({ date: todayStr, dayName: dayName, exercises: [], details: [], skipped: true });
+      else todayRec.skipped = true;
       Store.set('history', history);
       Shell.notify('День отмечен как пропущенный');
     };
