@@ -42,69 +42,69 @@
 
     var circleHtml = '';
     if (dayClosed) {
-      circleHtml = '<button id="wStartBtn" disabled style="width:136px;height:136px;border-radius:50%;border:2px solid var(--success);background:var(--bg-card);color:var(--success);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;opacity:0.75">' +
-        '<i class="ph ph-check-circle" style="font-size:2.2em"></i><span style="font-weight:700;font-size:0.85em">ГОТОВО</span><small style="font-size:0.7em">день закрыт</small></button>';
+      circleHtml = '<button id="wStartBtn" class="start-circle" disabled style="opacity:0.65;cursor:not-allowed">' +
+        '<i class="ph ph-check-circle"></i><span>Готово</span><small>день закрыт</small></button>';
     } else if (daySkipped) {
-      circleHtml = '<button id="wStartBtn" style="width:136px;height:136px;border-radius:50%;border:2px solid #fbbf24;background:var(--bg-card);color:#fbbf24;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer">' +
-        '<i class="ph ph-arrow-counterclockwise" style="font-size:2.2em"></i><span style="font-weight:700;font-size:0.85em">ВЕРНУТЬСЯ</span><small style="font-size:0.7em">передумал?</small></button>';
+      circleHtml = '<button id="wStartBtn" class="start-circle" style="border-color:var(--accent-warning)">' +
+        '<i class="ph ph-arrow-counterclockwise"></i><span>Вернуться</span><small>передумал?</small></button>';
     } else if (exCount > 0) {
-      circleHtml = '<button id="wStartBtn" style="width:136px;height:136px;border-radius:50%;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 10px 30px rgba(34,197,94,0.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer">' +
-        '<i class="ph ph-play-circle" style="font-size:2.2em"></i><span style="font-weight:700;font-size:0.85em">НАЧАТЬ</span><small style="font-size:0.7em">' + exCount + ' упр.</small></button>';
+      circleHtml = '<button id="wStartBtn" class="start-circle">' +
+        '<i class="ph ph-play-circle"></i><span>Начать</span><small>' + exCount + ' упр.</small></button>';
     } else {
-      circleHtml = '<button id="wPlanBtn" style="width:136px;height:136px;border-radius:50%;border:2px solid var(--border-accent);background:var(--bg-card);color:var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer">' +
-        '<i class="ph ph-calendar-plus" style="font-size:2.2em"></i><span style="font-weight:700;font-size:0.85em">ПЛАН</span><small style="font-size:0.7em">настроить</small></button>';
+      circleHtml = '<button id="wPlanBtn" class="start-circle">' +
+        '<i class="ph ph-calendar-plus"></i><span>План</span><small>настроить</small></button>';
     }
 
     var statusHtml = '';
     if (daySkipped) {
-      statusHtml = '<div class="fe-card" style="border-left:3px solid var(--error);background:rgba(248,113,113,0.08);font-size:0.9em">' +
-        '<strong style="color:var(--error)">День пропущен</strong><div style="opacity:0.75;font-size:0.85em;margin-top:2px">Нажми «Вернуться», если готов тренироваться</div></div>';
+      statusHtml = '<div style="background:rgba(248,113,113,0.1);padding:12px 16px;border-radius:var(--radius-md);margin-bottom:14px;border-left:3px solid var(--accent-error);font-size:0.9em">' +
+        '<strong style="color:var(--accent-error)">День пропущен</strong><div style="opacity:0.75;font-size:0.85em;margin-top:2px">Нажми «Вернуться», если готов тренироваться</div></div>';
     } else if (dayClosed) {
-      statusHtml = '<div class="fe-card" style="border-left:3px solid var(--success);background:rgba(74,222,128,0.08);font-size:0.9em">' +
-        '<strong style="color:var(--success)">Тренировка проведена</strong><div style="opacity:0.75;font-size:0.85em;margin-top:2px">Отличная работа сегодня!</div></div>';
+      statusHtml = '<div style="background:rgba(74,222,128,0.1);padding:12px 16px;border-radius:var(--radius-md);margin-bottom:14px;border-left:3px solid var(--accent-success);font-size:0.9em">' +
+        '<strong style="color:var(--accent-success)">Тренировка проведена</strong><div style="opacity:0.75;font-size:0.85em;margin-top:2px">Отличная работа сегодня!</div></div>';
     }
 
     container.innerHTML =
-      '<div style="max-width:480px;margin:0 auto">' +
-        '<div class="fe-card" style="border-color:var(--border-accent)">' +
+      '<div style="padding:4px;max-width:500px;margin:0 auto">' +
+        '<div style="background:var(--bg-card);border-radius:var(--radius-md);padding:16px 20px;margin-bottom:16px;border:1px solid var(--border-gold);box-shadow:var(--shadow-card)">' +
           '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
-            '<div style="display:flex;align-items:center;gap:8px">' +
-              '<i class="ph ph-star" style="font-size:1.6em;color:var(--accent)"></i>' +
-              '<span style="font-size:1.6em;font-weight:800;color:var(--accent)">' + stats.level + '</span>' +
-              '<span style="font-size:0.8em;opacity:0.7">уровень</span>' +
+            '<div style="display:flex;align-items:center;gap:10px">' +
+              '<i class="ph ph-star" style="font-size:1.8em;color:var(--accent-gold)"></i>' +
+              '<span style="font-size:1.8em;font-weight:bold;color:var(--accent-gold);line-height:1">' + stats.level + '</span>' +
+              '<span style="font-size:0.75em;opacity:0.7">уровень</span>' +
             '</div>' +
-            '<div style="font-size:0.9em"><strong>' + stats.xp + '</strong><span style="opacity:0.6"> / ' + xpNeeded + ' XP</span></div>' +
+            '<div style="text-align:right"><div style="font-size:0.75em;opacity:0.7">XP</div><div style="font-size:1em;font-weight:bold">' + stats.xp + '<span style="font-size:0.7em;opacity:0.6">/' + xpNeeded + '</span></div></div>' +
           '</div>' +
-          '<div style="height:6px;background:rgba(0,0,0,0.4);border-radius:4px;overflow:hidden">' +
-            '<div style="height:100%;width:' + xpPct + '%;background:var(--accent);transition:width 0.4s"></div>' +
+          '<div style="height:6px;background:rgba(0,0,0,0.3);border-radius:3px;overflow:hidden;border:1px solid var(--border-subtle)">' +
+            '<div style="height:100%;width:' + xpPct + '%;background:linear-gradient(90deg,var(--accent-gold),var(--accent-gold-light));border-radius:3px;transition:width 0.4s"></div>' +
           '</div>' +
         '</div>' +
 
-        '<div class="fe-card" style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
-          '<div><div style="font-weight:700;color:var(--accent);font-size:1.05em">' + greeting + '</div>' +
-          '<div style="font-size:0.85em;opacity:0.75;margin-top:2px">Сегодня <strong>' + esc(dayName) + '</strong></div></div>' +
-          '<div style="font-size:0.82em;color:var(--accent)"><i class="ph ph-list-checks"></i> ' + (exCount > 0 ? exCount + ' упр.' : 'нет плана') + '</div>' +
+        '<div style="background:var(--bg-card);border-radius:var(--radius-md);padding:16px 20px;border:1px solid var(--border-subtle);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+          '<div><div style="font-size:1.1em;font-weight:600;color:var(--accent-gold)">' + greeting + '</div>' +
+          '<div style="font-size:0.85em;opacity:0.7;margin-top:2px">Сегодня <strong>' + esc(dayName) + '</strong></div></div>' +
+          '<div style="font-size:0.8em;color:var(--accent-gold)"><i class="ph ph-list-checks"></i> ' + (exCount > 0 ? exCount + ' упр.' : 'нет плана') + '</div>' +
         '</div>' +
 
-        '<div style="display:flex;flex-direction:column;align-items:center;gap:14px;margin:20px 0">' +
+        '<div style="display:flex;flex-direction:column;align-items:center;gap:16px;margin-bottom:16px">' +
           circleHtml +
-          '<div style="display:flex;gap:8px;width:100%;max-width:300px">' +
-            '<button class="fe-btn fe-btn-sec" id="wLaterBtn" style="flex:1" ' + (dayClosed ? 'disabled' : '') + '><i class="ph ph-clock"></i> Позже</button>' +
-            '<button class="fe-btn fe-btn-sec" id="wSkipBtn" style="flex:1" ' + (dayClosed ? 'disabled' : '') + '><i class="ph ph-x"></i> Пропуск</button>' +
+          '<div style="display:flex;gap:8px;width:100%;max-width:320px">' +
+            '<button class="btn btn-secondary" id="wLaterBtn" style="flex:1" ' + (dayClosed ? 'disabled' : '') + '><i class="ph ph-clock"></i> Позже</button>' +
+            '<button class="btn w-skip" id="wSkipBtn" style="flex:1" ' + (dayClosed ? 'disabled' : '') + '><i class="ph ph-x"></i> Пропустить</button>' +
           '</div>' +
         '</div>' +
 
         statusHtml +
 
-        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">' +
-          '<div class="fe-card" style="text-align:center;margin:0;padding:12px 6px"><i class="ph ph-flame" style="font-size:1.4em;color:var(--accent)"></i><div style="font-size:1.3em;font-weight:800;color:var(--accent);margin-top:4px">' + stats.streak + '</div><div style="font-size:0.72em;opacity:0.7">стрик</div></div>' +
-          '<div class="fe-card" style="text-align:center;margin:0;padding:12px 6px"><i class="ph ph-barbell" style="font-size:1.4em;color:var(--accent)"></i><div style="font-size:1.3em;font-weight:800;color:var(--accent);margin-top:4px">' + (stats.yes || 0) + '</div><div style="font-size:0.72em;opacity:0.7">тренировок</div></div>' +
-          '<div class="fe-card" style="text-align:center;margin:0;padding:12px 6px"><i class="ph ph-lightning" style="font-size:1.4em;color:var(--accent)"></i><div style="font-size:1.3em;font-weight:800;color:var(--accent);margin-top:4px">' + totalXp + '</div><div style="font-size:0.72em;opacity:0.7">всего XP</div></div>' +
+        '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0">' +
+          '<div style="background:var(--bg-card);border-radius:var(--radius-sm);padding:12px 8px;text-align:center;border:1px solid var(--border-subtle)"><i class="ph ph-flame" style="font-size:1.5em;color:var(--accent-gold)"></i><div style="font-size:1.3em;font-weight:bold;color:var(--accent-gold);margin-top:4px">' + stats.streak + '</div><div style="font-size:0.7em;opacity:0.7">стрик</div></div>' +
+          '<div style="background:var(--bg-card);border-radius:var(--radius-sm);padding:12px 8px;text-align:center;border:1px solid var(--border-subtle)"><i class="ph ph-barbell" style="font-size:1.5em;color:var(--accent-gold)"></i><div style="font-size:1.3em;font-weight:bold;color:var(--accent-gold);margin-top:4px">' + (stats.yes || 0) + '</div><div style="font-size:0.7em;opacity:0.7">тренировок</div></div>' +
+          '<div style="background:var(--bg-card);border-radius:var(--radius-sm);padding:12px 8px;text-align:center;border:1px solid var(--border-subtle)"><i class="ph ph-lightning" style="font-size:1.5em;color:var(--accent-gold)"></i><div style="font-size:1.3em;font-weight:bold;color:var(--accent-gold);margin-top:4px">' + totalXp + '</div><div style="font-size:0.7em;opacity:0.7">всего XP</div></div>' +
         '</div>' +
 
-        '<div class="fe-card" style="border-left:3px solid var(--accent);display:flex;align-items:center;gap:10px;font-size:0.9em">' +
-          '<i class="ph ' + mot.icon + '" style="font-size:1.3em;color:var(--accent)"></i>' +
-          '<strong style="color:var(--accent)">' + esc(mot.text) + '</strong>' +
+        '<div style="background:var(--bg-card);border-radius:var(--radius-sm);padding:12px 16px;border-left:3px solid var(--accent-gold);font-size:0.9em;display:flex;align-items:center;gap:10px">' +
+          '<i class="ph ' + mot.icon + '" style="font-size:1.3em;color:var(--accent-gold)"></i>' +
+          '<div style="color:var(--accent-gold);font-weight:600">' + esc(mot.text) + '</div>' +
         '</div>' +
       '</div>';
 
