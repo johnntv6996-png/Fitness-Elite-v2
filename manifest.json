@@ -1,7 +1,7 @@
 {
-  "version": "1.0.5",
+  "version": "1.1.0",
   "files": [
-		{ "path": "assets/fonts/Inter_18pt-Light.ttf", "type": "font", "required": false },
+    { "path": "assets/fonts/Inter_18pt-Light.ttf", "type": "font", "required": false },
     { "path": "assets/fonts/Inter_18pt-Regular.ttf", "type": "font", "required": false },
     { "path": "assets/fonts/Inter_18pt-Medium.ttf", "type": "font", "required": false },
     { "path": "assets/fonts/Inter_18pt-SemiBold.ttf", "type": "font", "required": false },
@@ -12,6 +12,11 @@
     { "path": "assets/fonts/PlayfairDisplay-Bold.ttf", "type": "font", "required": false },
     { "path": "assets/fonts/PlayfairDisplay-Black.ttf", "type": "font", "required": false },
     { "path": "assets/fonts/fonts.css", "type": "css", "required": false },
+
+    { "path": "assets/icons/Phosphor.woff2", "type": "font", "required": true },
+    { "path": "assets/icons/Phosphor-Fill.woff2", "type": "font", "required": true },
+    { "path": "assets/icons/phosphor-regular.css", "type": "css", "required": true },
+    { "path": "assets/icons/phosphor-fill.css", "type": "css", "required": true },
 
     { "path": "styles/base.css", "type": "css", "required": true },
     { "path": "styles/components.css", "type": "css", "required": true },
@@ -31,7 +36,7 @@
     { "path": "app/shell.js", "type": "js", "required": true },
 
     { "path": "modules/welcome.js", "type": "module", "id": "welcome", "required": true },
-		{ "path": "modules/exercises.js", "type": "module", "id": "exercises", "required": false },
-		{ "path": "modules/dev-panel.js", "type": "module", "id": "dev-panel", "required": false }
+    { "path": "modules/exercises.js", "type": "module", "id": "exercises", "required": false },
+    { "path": "modules/dev-panel.js", "type": "module", "id": "dev-panel", "required": false }
   ]
 }
