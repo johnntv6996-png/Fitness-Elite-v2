@@ -42,13 +42,21 @@
       if (!byRel['manifest.json']) { renderStatus('Ошибка', 'В папке нет manifest.json', true); return; }
       byRel['manifest.json'].text().then(function(txt) {
         var manifest = JSON.parse(txt);
+        var list = manifest.files || [];
+        var total = list.length, done = 0;
         var missing = [], records = [];
-        var jobs = (manifest.files || []).map(function(entry) {
+        renderStatus('Импорт папки', 'Чтение файлов...', false, null, 0);
+        var jobs = list.map(function(entry) {
           var f = byRel[entry.path];
-          if (!f) { if (entry.required) missing.push(entry.path); return Promise.resolve(); }
+          if (!f) {
+            if (entry.required) missing.push(entry.path);
+            done++; updateProgress(done, total);
+            return Promise.resolve();
+          }
           var reader = entry.type === 'font' ? Promise.resolve(f) : f.text();
           return reader.then(function(content) {
             records.push({ path: entry.path, type: entry.type, id: entry.id || null, required: !!entry.required, content: content, version: manifest.version });
+            done++; updateProgress(done, total, 'Файл: ' + entry.path.split('/').pop());
           });
         });
         return Promise.all(jobs).then(function() {
@@ -61,9 +69,16 @@
     }
   };
 
-  function renderStatus(title, subtitle, isError, missingList) {
+  function renderStatus(title, subtitle, isError, missingList, progress) {
     var root = document.getElementById('app');
     if (!root) return;
+    var pct = (typeof progress === 'number') ? Math.max(0, Math.min(100, Math.round(progress))) : null;
+    var progressHtml = (pct !== null && !isError)
+      ? '<div style="width:100%;max-width:300px;margin:16px auto 6px;height:6px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden">' +
+          '<div id="bootProgressFill" style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,#d4af37,#f4d03f);border-radius:4px;transition:width 0.2s ease-out"></div>' +
+        '</div>' +
+        '<div id="bootProgressPct" style="font-size:0.78em;opacity:0.6;font-family:monospace">' + pct + '%</div>'
+      : '';
     var listHtml = (missingList && missingList.length)
       ? '<div style="margin:12px auto;padding:10px;max-width:400px;text-align:left;background:rgba(248,113,113,0.1);border:1px solid #f87171;border-radius:8px;font-size:0.8em">' +
         '<strong>Не найдены файлы:</strong><br>' + missingList.join('<br>') + '</div>'
@@ -79,9 +94,19 @@
     root.innerHTML =
       '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center">' +
         '<div style="font-size:1.4em;font-weight:800;color:' + (isError ? '#f87171' : '#d4af37') + ';margin-bottom:8px">' + title + '</div>' +
-        '<div style="font-size:0.9em;opacity:0.75;max-width:400px">' + subtitle + '</div>' +
-        listHtml + retryHtml +
+        '<div id="bootSubtitle" style="font-size:0.9em;opacity:0.75;max-width:400px">' + subtitle + '</div>' +
+        progressHtml + listHtml + retryHtml +
       '</div>';
+  }
+
+  function updateProgress(done, total, label) {
+    var pct = total > 0 ? Math.round((done / total) * 100) : 0;
+    var fill = document.getElementById('bootProgressFill');
+    var text = document.getElementById('bootProgressPct');
+    var sub = document.getElementById('bootSubtitle');
+    if (fill) fill.style.width = pct + '%';
+    if (text) text.textContent = pct + '% (' + done + '/' + total + ')';
+    if (sub && label) sub.textContent = label;
   }
 
   function fetchTimeout(url, ms) {
@@ -95,7 +120,10 @@
   }
   function downloadFiles(baseUrl, manifest) {
     var list = manifest.files || [];
+    var total = list.length, done = 0;
     var result = [], missing = [];
+    renderStatus('Первая загрузка', 'Скачивание файлов приложения...', false, null, 0);
+
     var jobs = list.map(function(entry) {
       var url = baseUrl + entry.path + (baseUrl.indexOf('http') === 0 ? '?t=' + Date.now() : '');
       return fetchTimeout(url, 8000)
@@ -107,14 +135,20 @@
             required: !!entry.required, content: data, version: manifest.version
           });
         })
-        .catch(function() { if (entry.required) missing.push(entry.path); });
+        .catch(function() { if (entry.required) missing.push(entry.path); })
+        .finally(function() {
+          done++;
+          updateProgress(done, total, 'Загружено: ' + entry.path.split('/').pop());
+        });
     });
+
     return Promise.all(jobs).then(function() {
       if (missing.length > 0) {
         var err = new Error('Missing required files');
         err.missing = missing;
         throw err;
       }
+      updateProgress(total, total, 'Сохранение в базу...');
       return result;
     });
   }
@@ -204,7 +238,7 @@
           });
         }
 
-        renderStatus('Первая загрузка', 'Скачивание файлов приложения...', false);
+        renderStatus('Первая загрузка', 'Скачивание файлов приложения...', false, null, 0);
         return fetchTimeout(GITHUB_BASE + 'manifest.json?t=' + Date.now(), 7000)
           .then(function(r) { return r.json(); })
           .then(function(m) { return downloadFiles(GITHUB_BASE, m).then(function(f) { return { manifest: m, files: f }; }); })

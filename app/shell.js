@@ -137,8 +137,11 @@
 
     var achText = document.getElementById('feAchText');
     if (achText) {
-      var thresholds = 0, nextAch = null;
-      for (var i = 0; i < thresholds.length; i++) if (lvl < thresholds[i]) { nextAch = thresholds[i]; break; }
+      var thresholds = new Array(5, 10, 20, 50, 100);
+      var nextAch = null;
+      for (var i = 0; i < thresholds.length; i++) {
+        if (lvl < thresholds[i]) { nextAch = thresholds[i]; break; }
+      }
       if (nextAch) {
         var curTot = MathCore.totalXp(st);
         var nextTot = MathCore.totalXp({ level: nextAch, xp: 0 });
@@ -312,7 +315,7 @@
       inp.click();
     };
     document.getElementById('prIconBtn').onclick = function() {
-      var icons = ['ph-user-circle','ph-barbell','ph-sword','ph-person-simple-run','ph-flame','ph-lightning','ph-star','ph-crown','ph-diamond','ph-trophy','ph-rocket','ph-target'];
+      var icons = new Array('ph-user-circle','ph-barbell','ph-sword','ph-person-simple-run','ph-flame','ph-lightning','ph-star','ph-crown','ph-diamond','ph-trophy','ph-rocket','ph-target');
       var sub = document.createElement('div');
       sub.className = 'ex-modal'; sub.style.zIndex = '2200';
       sub.innerHTML = '<div class="ex-modal-content" style="max-width:400px"><h3 style="color:var(--accent-gold);margin-bottom:12px">Выбери иконку</h3>' +
