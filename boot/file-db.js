@@ -1,4 +1,4 @@
-// app/file-db.js
+// boot/file-db.js
 (function() {
   'use strict';
 
@@ -84,14 +84,26 @@
     return saveFiles(env, [fileObj]);
   }
 
+  function copyProdToDev() {
+    return Promise.all([getMeta('manifest_prod'), getAllFiles('prod')])
+      .then(function(res) {
+        if (!res || !res.length) throw new Error('В PROD нет файлов для копирования');
+        return clearEnv('dev').then(function() {
+          return saveFiles('dev', res);
+        }).then(function() {
+          return setMeta('manifest_dev', JSON.parse(JSON.stringify(res)));
+        });
+      });
+  }
+
   function copyDevToProd() {
     return Promise.all([getMeta('manifest_dev'), getAllFiles('dev')])
       .then(function(res) {
-        if (!res[0] || !res[1].length) throw new Error('В DEV нет файлов');
+        if (!res || !res.length) throw new Error('В DEV нет файлов для переноса');
         return clearEnv('prod').then(function() {
-          return saveFiles('prod', res[1]);
+          return saveFiles('prod', res);
         }).then(function() {
-          return setMeta('manifest_prod', JSON.parse(JSON.stringify(res[0])));
+          return setMeta('manifest_prod', JSON.parse(JSON.stringify(res)));
         });
       });
   }
@@ -107,4 +119,3 @@
     copyDevToProd: copyDevToProd
   };
 })();
-
