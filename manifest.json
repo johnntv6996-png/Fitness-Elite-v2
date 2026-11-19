@@ -1,5 +1,5 @@
 {
-  "version": "1.3.0",
+  "version": "1.4.0",
   "files": [
     { "path": "assets/fonts/Inter_18pt-Light.ttf", "type": "font", "required": false },
     { "path": "assets/fonts/Inter_18pt-Regular.ttf", "type": "font", "required": false },
@@ -40,7 +40,8 @@
     { "path": "modules/exercises.js", "type": "module", "id": "exercises", "required": false },
     { "path": "modules/dev-panel.js", "type": "module", "id": "dev-panel", "required": false },
 		{ "path": "modules/plan.js", "type": "module", "id": "plan", "required": false },
-		{ "path": "modules/workout-flow.js", "type": "module", "id": "workout-flow", "required": false }
+		{ "path": "modules/workout-flow.js", "type": "module", "id": "workout-flow", "required": false },
+    { "path": "modules/stats.js", "type": "module", "id": "stats", "required": false }
 
   ]
 }
