@@ -19,6 +19,7 @@
     { "path": "app/shell.js", "type": "js", "required": true },
 
     { "path": "modules/welcome.js", "type": "module", "id": "welcome", "required": true },
-		{ "path": "modules/exercises.js", "type": "module", "id": "exercises", "required": false }
+		{ "path": "modules/exercises.js", "type": "module", "id": "exercises", "required": false },
+		{ "path": "modules/dev-panel.js", "type": "module", "id": "dev-panel", "required": false }
   ]
 }
