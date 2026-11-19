@@ -236,3 +236,41 @@ body.sidebar-open .main-content { margin-left: var(--sidebar-width); max-width: 
 .plan-day-body.active { display: block; animation: fadeIn 0.3s ease-out; }
 .plan-ex { background: var(--bg-primary); padding: 12px 14px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 3px solid var(--accent-gold); }
 .today-dot { width: 8px; height: 8px; background: var(--accent-success); border-radius: 50%; display: inline-block; margin-left: 8px; box-shadow: 0 0 8px var(--accent-success); }
+
+
+/* === Пошаговая тренировка (WorkoutFlow) === */
+.wf-ex-card { background: var(--bg-card); border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border-subtle); overflow: hidden; }
+.wf-ex-card.done { border-color: var(--accent-success); background: rgba(74, 222, 128, 0.04); }
+.wf-ex-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; cursor: pointer; }
+.wf-ex-row .idx { width: 26px; height: 26px; border-radius: 50%; background: var(--bg-primary); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; font-size: 0.78em; font-weight: 700; color: var(--accent-gold); flex-shrink: 0; }
+.wf-ex-card.done .idx { background: var(--accent-success); color: #000; border-color: var(--accent-success); }
+.wf-ex-row .info { flex: 1; min-width: 0; }
+.wf-ex-row .name { font-weight: 600; font-size: 0.9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wf-ex-row .meta { font-size: 0.72em; opacity: 0.65; margin-top: 2px; }
+.wf-media { border-radius: 10px; overflow: hidden; background: var(--bg-primary); max-height: 200px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+.wf-media img { max-width: 100%; max-height: 200px; display: block; object-fit: contain; }
+.wf-meta-line { display: flex; flex-wrap: wrap; gap: 6px; font-size: 0.75em; opacity: 0.8; margin-top: 8px; }
+.wf-meta-line span { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; background: var(--bg-primary); border-radius: 12px; border: 1px solid var(--border-subtle); }
+.wf-set-dots { display: flex; gap: 8px; justify-content: center; margin: 12px 0; flex-wrap: wrap; }
+.wf-set-dot { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--border-subtle); background: var(--bg-primary); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85em; color: var(--text-secondary); }
+.wf-set-dot.done { border-color: var(--accent-success); background: rgba(74, 222, 128, 0.12); color: var(--accent-success); }
+.wf-set-dot.partial { border-color: var(--accent-warning); background: rgba(251, 191, 36, 0.12); color: var(--accent-warning); }
+.wf-set-dot.active { border-color: var(--accent-gold); box-shadow: 0 0 10px var(--accent-gold); color: var(--accent-gold); }
+.wf-set-dot.missed { border-color: var(--accent-error); background: rgba(248, 113, 113, 0.1); color: var(--accent-error); }
+.wf-btn { padding: 12px 16px; border: none; border-radius: 12px; font-family: var(--font-primary); font-weight: 700; font-size: 0.92em; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; }
+.wf-btn:hover:not(:disabled) { transform: translateY(-2px); }
+.wf-btn-primary { background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light)); color: #000; }
+.wf-btn-secondary { background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-subtle); }
+.wf-btn-success { background: linear-gradient(135deg, #16a34a, #22c55e); color: #fff; }
+.wf-btn-warning { background: linear-gradient(135deg, #d97706, #f59e0b); color: #fff; }
+.wf-btn-danger { background: linear-gradient(135deg, #dc2626, #ef4444); color: #fff; }
+.wf-big-timer { display: flex; align-items: center; justify-content: center; min-height: 210px; position: relative; }
+.wf-timer-ring { position: relative; width: 190px; height: 190px; }
+.wf-timer-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.wf-timer-ring .wf-timer-bg { fill: none; stroke: rgba(255, 255, 255, 0.08); stroke-width: 10; }
+.wf-timer-ring .wf-timer-fill { fill: none; stroke: var(--accent-gold); stroke-width: 10; stroke-linecap: round; transition: stroke-dashoffset 0.3s linear; }
+.wf-timer-ring.rest .wf-timer-fill { stroke: var(--accent-info); }
+.wf-timer-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
+.wf-timer-text .val { font-family: var(--font-display); font-size: 2.6em; font-weight: 900; color: var(--accent-gold); line-height: 1; }
+.wf-timer-text .val.rest { color: var(--accent-info); }
+.wf-timer-text .lbl { font-size: 0.72em; opacity: 0.7; text-transform: uppercase; letter-spacing: 2px; margin-top: 6px; }
