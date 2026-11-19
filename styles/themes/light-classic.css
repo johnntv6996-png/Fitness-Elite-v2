@@ -1,14 +1,14 @@
-/* styles/themes/light-classic.css */
+/* styles/builtin/light-classic.css */
 /* Premium Light — светлая, золото */
 
 /* === База === */
 body[data-style="light-classic"] {
   --bg-primary: #f5f2eb;
   --bg-secondary: #ebe7dd;
-  --bg-card: rgba(255, 255, 255, 0.55);
+  --bg-card: rgba(0, 0, 0, 0.03);
   --bg-glass: rgba(255, 255, 255, 0.7);
   --bg-hover: rgba(0, 0, 0, 0.05);
-  --bg-input: #ffffff;
+  --bg-input: #f5f2eb;
   --text-primary: #1a1a1f;
   --text-secondary: #5a5a6a;
   --text-muted: #8a8a9a;
@@ -22,8 +22,8 @@ body[data-style="light-classic"] {
   --accent-info: #0284c7;
   --accent-neon: #0284c7;
   --border-subtle: rgba(0, 0, 0, 0.08);
-  --border-gold: rgba(166, 124, 0, 0.35);
-  --border-strong: rgba(0, 0, 0, 0.18);
+  --border-gold: rgba(166, 124, 0, 0.3);
+  --border-strong: rgba(0, 0, 0, 0.15);
   --shadow-gold: 0 0 40px rgba(166, 124, 0, 0.15);
   --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
   --shadow-modal: 0 10px 40px rgba(0, 0, 0, 0.2);
@@ -63,7 +63,7 @@ body[data-style="light-classic"] .header h1 {
 body[data-style="light-classic"] .header h1 i { -webkit-text-fill-color: var(--accent-gold); color: var(--accent-gold); }
 body[data-style="light-classic"] .theme-btn {
   background: var(--bg-glass);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-subtle);
   color: var(--text-secondary);
 }
 body[data-style="light-classic"] .theme-btn:hover {
@@ -74,7 +74,7 @@ body[data-style="light-classic"] .theme-btn:hover {
 }
 body[data-style="light-classic"] .hamburger {
   background: var(--bg-glass);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-subtle);
 }
 body[data-style="light-classic"] .hamburger:hover { background: rgba(166, 124, 0, 0.1); border-color: var(--border-gold); }
 body[data-style="light-classic"] .hamburger span { background: var(--accent-gold); }
@@ -149,7 +149,7 @@ body[data-style="light-classic"] .btn-primary:hover:not(:disabled) { box-shadow:
 body[data-style="light-classic"] .btn-secondary {
   background: var(--bg-glass);
   color: var(--text-primary);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-subtle);
 }
 body[data-style="light-classic"] .btn-secondary:hover:not(:disabled) { background: rgba(0, 0, 0, 0.06); }
 body[data-style="light-classic"] .btn-danger {
@@ -164,7 +164,7 @@ body[data-style="light-classic"] .btn-success {
 body[data-style="light-classic"] .w-skip {
   background: var(--bg-glass);
   color: var(--text-secondary);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-subtle);
 }
 body[data-style="light-classic"] .w-skip:hover:not(:disabled) {
   background: rgba(220, 38, 38, 0.1);
@@ -174,13 +174,10 @@ body[data-style="light-classic"] .w-skip:hover:not(:disabled) {
 
 /* === Круглая «Начать» === */
 body[data-style="light-classic"] .start-circle {
-  background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-light) 100%);
-  color: #ffffff;
-  border: 2px solid var(--accent-gold);
-  box-shadow: 0 10px 30px rgba(166, 124, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-}
-body[data-style="light-classic"] .start-circle:hover:not(:disabled) {
-  box-shadow: 0 14px 40px rgba(166, 124, 0, 0.45);
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  color: #fff;
+  border: none;
+  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
 }
 
 /* === Модалки === */
@@ -199,6 +196,14 @@ body[data-style="light-classic"] .calendar-content {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-gold);
 }
+
+/* === Загрузка === */
+body[data-style="light-classic"] .loading h2 {
+  background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+body[data-style="light-classic"] .loading .icon-large { color: var(--accent-gold); }
 
 /* === Dev-панель === */
 body[data-style="light-classic"] .dev-panel {
@@ -240,3 +245,8 @@ body[data-style="light-classic"] .achievement-particle { background: var(--accen
   50% { transform: scale(1.1); filter: drop-shadow(0 0 8px var(--accent-gold)); }
 }
 @keyframes xpShine { 0% { left: -100%; } 100% { left: 100%; } }
+@keyframes xpGain {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.8); box-shadow: 0 0 12px var(--accent-gold); }
+  100% { filter: brightness(1); }
+}

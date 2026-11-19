@@ -94,8 +94,12 @@ body.sidebar-open .main-content { margin-left: var(--sidebar-width); max-width: 
 }
 .btn:active { transform: scale(0.97); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+<<<<<<< HEAD
 .btn-primary:hover:not(:disabled), .btn-secondary:hover:not(:disabled),
 .btn-danger:hover:not(:disabled), .btn-success:hover:not(:disabled) { transform: translateY(-2px); }
+=======
+.btn-primary:hover:not(:disabled), .btn-secondary:hover:not(:disabled), .btn-danger:hover:not(:disabled), .btn-success:hover:not(:disabled) { transform: translateY(-2px); }
+>>>>>>> parent of 0bf6cfb (fix start button and colors)
 
 /* === Модалки === */
 .workout-modal, .survey-modal, .ex-modal, .calendar-modal, .muscle-modal, .nut-modal {
@@ -161,6 +165,7 @@ body.sidebar-open .main-content { margin-left: var(--sidebar-width); max-width: 
 .ex-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); border-color: var(--border-gold); }
 .ex-card.favorite { border-left: 3px solid var(--accent-gold); }
 
+<<<<<<< HEAD
 .cat-row { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; padding: 8px 4px; scrollbar-width: none; flex: 1; min-width: 0; }
 .cat-row::-webkit-scrollbar { height: 6px; display: none; }
 .cat-row:hover::-webkit-scrollbar { display: block; }
@@ -184,17 +189,74 @@ body.sidebar-open .main-content { margin-left: var(--sidebar-width); max-width: 
 .cat-btn.ancestor { background: var(--accent-gold-dim); border-color: var(--border-gold); color: var(--accent-gold); }
 .cat-btn:not(.active):not(.ancestor):hover { background: var(--bg-hover); color: var(--text-primary); }
 .cat-btn.child { border-style: dashed; }
+=======
+/* === Единая сетка и компоненты экранов === */
+.screen-container { padding: 6px 4px 32px; max-width: 680px; margin: 0 auto; }
+.screen-container.narrow { max-width: 500px; }
+.screen-title { font-family: var(--font-display); font-size: 1.75em; margin-bottom: 16px; color: var(--accent-gold); display: flex; align-items: center; gap: 10px; }
+
+.card {
+  background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md);
+  padding: 16px 20px; margin-bottom: 14px; box-shadow: var(--shadow-card);
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.card-gold { border-color: var(--border-gold); }
+.card-hover:hover { transform: translateY(-3px); border-color: var(--border-gold); box-shadow: var(--shadow-gold); }
+.card-left-gold { border-left: 3px solid var(--accent-gold); }
+.card-left-success { border-left: 3px solid var(--accent-success); background: rgba(74, 222, 128, 0.08); }
+.card-left-error { border-left: 3px solid var(--accent-error); background: rgba(248, 113, 113, 0.08); }
+/* === Анимации главного экрана === */
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fillBar { from { width: 0%; } }
+@keyframes glowPulse { 0%, 100% { box-shadow: var(--shadow-card); } 50% { box-shadow: var(--shadow-gold); } }
+>>>>>>> parent of 0bf6cfb (fix start button and colors)
 
 .fav-btn { background: transparent; border: none; cursor: pointer; font-size: 1.3em; padding: 4px 8px; transition: all 0.2s; }
 .fav-btn:hover { transform: scale(1.2); }
 .fav-btn.active { color: var(--accent-gold); }
 .fav-btn:not(.active) { color: var(--text-muted); opacity: 0.5; }
 
+<<<<<<< HEAD
 .ex-search, .ex-sort { padding: 8px 10px; background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-primary); font-size: 0.9em; }
 .ex-search { flex: 1; min-width: 140px; }
 .ex-view-section { background: var(--bg-primary); padding: 14px; border-radius: 10px; margin-bottom: 12px; }
 .ex-view-section h3 { color: var(--accent-gold); margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px; font-family: var(--font-display); font-size: 1.1em; }
 .ex-view-actions { display: flex; gap: 10px; margin-top: 20px; }
+=======
+/* === Компоненты Welcome === */
+.lvl-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.lvl-badge { display: flex; align-items: center; gap: 10px; }
+.lvl-badge i { font-size: 1.8em; color: var(--accent-gold); }
+.lvl-num { font-size: 1.8em; font-weight: 800; color: var(--accent-gold); line-height: 1; }
+.xp-track { height: 6px; background: rgba(128, 128, 128, 0.2); border-radius: 3px; overflow: hidden; border: 1px solid var(--border-subtle); }
+.xp-fill { height: 100%; background: linear-gradient(90deg, var(--accent-gold), var(--accent-gold-light)); border-radius: 3px; animation: fillBar 1s ease-out both; }
+
+.welcome-hero { display: flex; flex-direction: column; align-items: center; gap: 16px; margin: 20px 0; }
+.welcome-sub-btns { display: flex; gap: 8px; width: 100%; max-width: 320px; }
+.welcome-sub-btns .btn { flex: 1; }
+
+.stat-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0; }
+.stat-tile { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 8px; text-align: center; transition: transform var(--transition-fast); }
+.stat-tile:hover { transform: translateY(-2px); border-color: var(--border-gold); }
+.stat-tile i { font-size: 1.5em; color: var(--accent-gold); }
+.stat-tile-val { font-size: 1.3em; font-weight: 800; color: var(--accent-gold); margin-top: 4px; }
+.stat-tile-lbl { font-size: 0.72em; opacity: 0.7; }
+
+/* === Поля форм === */
+.form-field { margin-bottom: 12px; }
+.form-label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.88em; color: var(--text-secondary); }
+.form-input, .form-select, .form-textarea {
+  width: 100%; padding: 10px 12px; background: var(--bg-input);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+  color: var(--text-primary); font-family: var(--font-primary); font-size: 0.95em;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent-gold); }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+body[data-style="cyber"] .card,
+body[data-style="cyber"] .stat-tile,
+body[data-style="cyber"] .form-input { border-width: 2px; border-color: var(--accent-gold); border-radius: 0; }
+>>>>>>> parent of 0bf6cfb (fix start button and colors)
 
 /* === Адаптив === */
 @media (max-width: 768px) {
@@ -209,9 +271,31 @@ body.sidebar-open .main-content { margin-left: var(--sidebar-width); max-width: 
   .sidebar { width: 280px; }
   :root { --sidebar-width: 280px; }
 }
+<<<<<<< HEAD
+=======
+@media (max-width: 480px) {
+  .screen-title { font-size: 1.45em; }
+  .card { padding: 14px 16px; }
+  .form-row-2 { grid-template-columns: 1fr; }
+}
+>>>>>>> parent of 0bf6cfb (fix start button and colors)
 @media (max-width: 380px) {
   .start-circle { width: 120px; height: 120px; }
   .start-circle i { font-size: 1.9em; }
   .start-circle span { font-size: 0.75em; }
 }
+<<<<<<< HEAD
 #styleQuickPicker { backdrop-filter: blur(50px); -webkit-backdrop-filter: blur(50px); }
+=======
+.ex-card {
+  background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm);
+  padding: 14px 16px; margin-bottom: 10px; cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  transition: all var(--transition-fast);
+}
+.ex-card:hover { transform: translateY(-2px); border-color: var(--border-gold); }
+.ex-card.fav { border-left: 3px solid var(--accent-gold); }
+.ex-card-title { font-weight: 700; color: var(--accent-gold); font-size: 1.05em; margin-bottom: 4px; }
+.ex-card-meta { font-size: 0.8em; opacity: 0.75; display: flex; gap: 12px; flex-wrap: wrap; }
+body[data-style="cyber"] .ex-card { border-width: 2px; border-color: var(--accent-gold); border-radius: 0; }
+>>>>>>> parent of 0bf6cfb (fix start button and colors)
