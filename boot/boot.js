@@ -2,7 +2,11 @@
 (function() {
   'use strict';
 
-  var GITHUB_BASE = 'https://githubusercontent.com';
+	var proto = 'https:' + '//';
+  var host = 'raw' + '.githubusercontent.com';
+  var repo = 'johnntv6996-png' + '/' + 'Fitness-Elite-v2' + '/main/';
+  var GITHUB_BASE = proto + host + '/' + repo;
+
   var ENV_KEY = 'fe_v2_env';
 
   function detectEnv() {
