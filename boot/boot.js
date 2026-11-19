@@ -1,15 +1,8 @@
-// app/boot.js
+// boot/boot.js
 (function() {
   'use strict';
 
-  var GITHUB_BASE = [
-    'https:/',
-    '://githubusercontent.com',
-    'johnntv6996-png',
-    'Fitness-Elite-v2',
-    'main',
-    ''
-  ].join('/');
+  var GITHUB_BASE = 'https://githubusercontent.com';
   var ENV_KEY = 'fe_v2_env';
 
   function detectEnv() {
@@ -26,19 +19,41 @@
   var _modules = new Map();
   window.App = {
     env: CURRENT_ENV,
-    define: function(id, moduleObj) {
-      _modules.set(id, moduleObj);
-    },
-    getModule: function(id) {
-      return _modules.get(id) || null;
-    },
-    getAllModules: function() {
-      return _modules;
-    },
+    define: function(id, moduleObj) { _modules.set(id, moduleObj); },
+    getModule: function(id) { return _modules.get(id) || null; },
+    getAllModules: function() { return _modules; },
     switchEnv: function(targetEnv) {
       if (targetEnv !== 'prod' && targetEnv !== 'dev') return;
       try { localStorage.setItem(ENV_KEY, targetEnv); } catch (e) {}
       location.reload();
+    },
+    importLocalFolder: function(fileList) {
+      if (!fileList || !fileList.length) return;
+      var byRel = {};
+      for (var i = 0; i < fileList.length; i++) {
+        var parts = fileList[i].webkitRelativePath.split('/');
+        parts.shift();
+        var rel = parts.join('/');
+        if (rel) byRel[rel] = fileList[i];
+      }
+      if (!byRel['manifest.json']) { renderStatus('Ошибка', 'В папке нет manifest.json', true); return; }
+      byRel['manifest.json'].text().then(function(txt) {
+        var manifest = JSON.parse(txt);
+        var missing = [], records = [];
+        var jobs = (manifest.files || []).map(function(entry) {
+          var f = byRel[entry.path];
+          if (!f) { if (entry.required) missing.push(entry.path); return Promise.resolve(); }
+          return f.text().then(function(content) {
+            records.push({ path: entry.path, type: entry.type, id: entry.id || null, required: !!entry.required, content: content, version: manifest.version });
+          });
+        });
+        return Promise.all(jobs).then(function() {
+          if (missing.length) { renderStatus('Не хватает файлов', 'Проверь состав папки', true, missing); return; }
+          return FileDB.saveFiles(CURRENT_ENV, records).then(function() {
+            return FileDB.setMeta('manifest_' + CURRENT_ENV, manifest);
+          }).then(function() { location.reload(); });
+        });
+      });
     }
   };
 
@@ -50,7 +65,12 @@
         '<strong>Не найдены файлы:</strong><br>' + missingList.join('<br>') + '</div>'
       : '';
     var retryHtml = isError
-      ? '<button onclick="location.reload()" style="margin-top:14px;padding:10px 22px;border-radius:10px;border:none;background:#d4af37;color:#000;font-weight:700;cursor:pointer">Повторить</button>'
+      ? '<div style="display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap">' +
+          '<button onclick="location.reload()" style="padding:10px 22px;border-radius:10px;border:none;background:#d4af37;color:#000;font-weight:700;cursor:pointer">Повторить</button>' +
+          '<label style="padding:10px 20px;border-radius:10px;border:1px solid #d4af37;color:#d4af37;font-weight:600;cursor:pointer">' +
+            'Выбрать папку с файлами<input type="file" webkitdirectory directory multiple style="display:none" onchange="App.importLocalFolder(this.files)">' +
+          '</label>' +
+        '</div>'
       : '';
     root.innerHTML =
       '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center">' +

@@ -103,15 +103,16 @@
       var nm = Store.get('user_name', '');
       nameEl.innerHTML = '<span>' + Store.esc(nm || 'Гость') + '</span><i class="ph ph-pencil-simple"></i>';
     }
-    if (typeof Helpers === 'undefined') return;
-    var st = Helpers.getStats();
-    var need = Helpers.xpForLevel(st.level);
+    if (typeof MathCore === 'undefined') return;
+    var st = MathCore.getStats();
+    var need = MathCore.xpForLevel(st.level);
     var pct = need > 0 ? Math.min(100, Math.round((st.xp / need) * 100)) : 0;
     var n = document.getElementById('feLvlNum'); if (n) n.textContent = st.level;
     var c = document.getElementById('feXpCur'); if (c) c.textContent = st.xp;
     var nd = document.getElementById('feXpNeed'); if (nd) nd.textContent = need;
     var fl = document.getElementById('feXpFill'); if (fl) fl.style.width = pct + '%';
   }
+
   function toggleSidebar(force) {
     var sb = document.getElementById('feSidebar');
     var ov = document.getElementById('feOverlay');

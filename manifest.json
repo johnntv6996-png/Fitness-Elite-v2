@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "files": [
     { "path": "styles/base.css", "type": "css", "required": true },
     { "path": "styles/components.css", "type": "css", "required": true },
@@ -18,6 +18,7 @@
 
     { "path": "app/shell.js", "type": "js", "required": true },
 
-    { "path": "modules/welcome.js", "type": "module", "id": "welcome", "required": true }
+    { "path": "modules/welcome.js", "type": "module", "id": "welcome", "required": true },
+		{ "path": "modules/exercises.js", "type": "module", "id": "exercises", "required": false }
   ]
 }
