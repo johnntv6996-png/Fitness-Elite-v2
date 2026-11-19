@@ -1,4 +1,4 @@
-/* styles/builtin/neon.css */
+/* styles/themes/neon.css */
 /* Неон — тёмный, циан + маджента, свечение */
 
 /* === База === */
@@ -36,8 +36,6 @@ body[data-style="neon"] {
     linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
   background: var(--bg-primary);
   color: var(--text-primary);
-}
-body[data-style="neon"] {
   background-size: 40px 40px;
 }
 
@@ -104,15 +102,23 @@ body[data-style="neon"] .sidebar-profile-name { color: var(--text-primary); }
 body[data-style="neon"] .sidebar-profile-name i { color: var(--accent-gold); }
 body[data-style="neon"] .sidebar-profile-sub { color: var(--text-secondary); }
 body[data-style="neon"] .profile-level-block { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-subtle); }
-body[data-style="neon"] .profile-level-icon { color: var(--accent-gold); animation: levelPulse 3s ease-in-out infinite; filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.6)); }
+body[data-style="neon"] .profile-level-icon { color: var(--accent-gold); filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.6)); animation: levelPulse 3s ease-in-out infinite; }
 body[data-style="neon"] .profile-level-num { color: var(--accent-gold); text-shadow: 0 0 10px rgba(0, 229, 255, 0.6); }
 body[data-style="neon"] .profile-level-label { color: var(--text-secondary); }
 body[data-style="neon"] .profile-xp-text { color: var(--text-secondary); }
 body[data-style="neon"] .profile-xp-text strong { color: var(--accent-gold); }
-body[data-style="neon"] .profile-xp-bar { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border-subtle); }
+body[data-style="neon"] .profile-xp-bar { background: rgba(0, 0, 0, 0.5); border: 1px solid var(--border-subtle); }
 body[data-style="neon"] .profile-xp-fill {
-  background: linear-gradient(90deg, #00e5ff, #ff2bd6);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+  background: linear-gradient(90deg, var(--accent-gold), var(--accent-gold-light));
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
+}
+body[data-style="neon"] .profile-xp-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: xpShine 2.5s ease-in-out infinite;
 }
 body[data-style="neon"] .profile-ach-hint { color: var(--text-muted); }
 body[data-style="neon"] .profile-ach-hint i { color: var(--accent-gold); }
@@ -120,17 +126,17 @@ body[data-style="neon"] .profile-ach-hint i { color: var(--accent-gold); }
 body[data-style="neon"] .sidebar-section-title { color: var(--text-secondary); }
 body[data-style="neon"] .sidebar-item { color: var(--text-secondary); border: 1px solid transparent; }
 body[data-style="neon"] .sidebar-item:hover {
-  background: rgba(0, 229, 255, 0.12);
-  color: var(--accent-gold);
+  background: rgba(0, 229, 255, 0.1);
+  color: var(--text-primary);
   border-color: var(--border-gold);
   transform: translateX(3px);
 }
 body[data-style="neon"] .sidebar-item.active {
-  background: rgba(0, 229, 255, 0.12);
+  background: rgba(0, 229, 255, 0.15);
   color: var(--accent-gold);
-  border-color: var(--border-gold);
+  border-color: var(--accent-gold);
 }
-body[data-style="neon"] .sidebar-item i { color: var(--accent-gold); }
+body[data-style="neon"] .sidebar-item i { color: var(--accent-gold); filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.6)); }
 body[data-style="neon"] .sidebar-divider { background: var(--border-subtle); }
 
 /* === Кнопки === */
@@ -139,57 +145,50 @@ body[data-style="neon"] .btn-primary {
   background: transparent;
   color: var(--accent-gold);
   border: 1px solid var(--accent-gold);
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.15);
-  text-shadow: 0 0 8px rgba(0, 229, 255, 0.6);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.12), inset 0 0 20px rgba(0, 229, 255, 0.05);
 }
-body[data-style="neon"] .btn-primary:hover:not(:disabled) { box-shadow: 0 0 20px rgba(0, 229, 255, 0.5); }
+body[data-style="neon"] .btn-primary:hover:not(:disabled) {
+  background: rgba(0, 229, 255, 0.12);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.6), inset 0 0 20px rgba(0, 229, 255, 0.1);
+}
 body[data-style="neon"] .btn-secondary {
   background: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(0, 229, 255, 0.4);
 }
-body[data-style="neon"] .btn-secondary:hover:not(:disabled) { background: rgba(255, 255, 255, 0.05); border-color: var(--border-gold); }
+body[data-style="neon"] .btn-secondary:hover:not(:disabled) { background: rgba(0, 229, 255, 0.1); border-color: var(--accent-gold); }
 body[data-style="neon"] .btn-danger {
   background: transparent;
-  color: var(--accent-error);
-  border: 1px solid var(--accent-error);
-  box-shadow: 0 0 10px rgba(255, 43, 214, 0.15);
+  color: #ff2bd6;
+  border: 1px solid #ff2bd6;
+  box-shadow: 0 0 20px rgba(255, 43, 214, 0.2);
 }
-body[data-style="neon"] .btn-danger:hover:not(:disabled) {
-  background: rgba(255, 43, 214, 0.15);
-  box-shadow: 0 0 20px rgba(255, 43, 214, 0.5);
-}
+body[data-style="neon"] .btn-danger:hover:not(:disabled) { background: rgba(255, 43, 214, 0.12); box-shadow: 0 0 30px rgba(255, 43, 214, 0.6); }
 body[data-style="neon"] .btn-success {
   background: transparent;
-  color: var(--accent-success);
-  border: 1px solid var(--accent-success);
-  box-shadow: 0 0 10px rgba(180, 255, 57, 0.15);
+  color: var(--accent-gold-light);
+  border: 1px solid var(--accent-gold-light);
+  box-shadow: 0 0 20px rgba(180, 255, 57, 0.2);
 }
 
 body[data-style="neon"] .w-skip {
   background: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid rgba(0, 229, 255, 0.4);
 }
 body[data-style="neon"] .w-skip:hover:not(:disabled) {
-  background: rgba(255, 43, 214, 0.15);
+  background: rgba(255, 43, 214, 0.12);
   color: #ff2bd6;
   border-color: #ff2bd6;
-  box-shadow: 0 0 15px rgba(255, 43, 214, 0.4);
 }
 
 /* === Круглая «Начать» === */
 body[data-style="neon"] .start-circle {
-  background: radial-gradient(circle at center, rgba(0, 229, 255, 0.15) 0%, transparent 70%);
-  color: #00e5ff;
-  border: 2px solid #00e5ff;
-  box-shadow: 0 0 30px rgba(0, 229, 255, 0.6), inset 0 0 30px rgba(0, 229, 255, 0.15);
+  background: transparent;
+  color: var(--accent-gold);
+  border: 2px solid var(--accent-gold);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.6), inset 0 0 30px rgba(0, 229, 255, 0.08);
   text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
-  animation: pulse-neon 2.5s ease-in-out infinite;
-}
-@keyframes pulse-neon {
-  0%, 100% { box-shadow: 0 0 30px rgba(0, 229, 255, 0.6), inset 0 0 30px rgba(0, 229, 255, 0.15); }
-  50% { box-shadow: 0 0 40px rgba(0, 229, 255, 0.8), inset 0 0 40px rgba(0, 229, 255, 0.25); }
 }
 
 /* === Модалки === */
@@ -197,7 +196,7 @@ body[data-style="neon"] .workout-modal,
 body[data-style="neon"] .survey-modal,
 body[data-style="neon"] .ex-modal,
 body[data-style="neon"] .calendar-modal {
-  background: rgba(5, 5, 10, 0.95);
+  background: rgba(5, 5, 10, 0.92);
 }
 body[data-style="neon"] .workout-modal-content,
 body[data-style="neon"] .survey-modal-content,
@@ -211,47 +210,53 @@ body[data-style="neon"] .calendar-content {
 
 /* === Загрузка === */
 body[data-style="neon"] .loading h2 {
-  background: linear-gradient(135deg, #00e5ff, #ff2bd6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: none;
+  -webkit-text-fill-color: var(--accent-gold);
+  color: var(--accent-gold);
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.6);
 }
-body[data-style="neon"] .loading .icon-large { color: var(--accent-gold); filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.6)); }
+body[data-style="neon"] .loading .icon-large { color: var(--accent-gold); filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.6)); }
 
 /* === Dev-панель === */
 body[data-style="neon"] .dev-panel {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-gold);
+  border-radius: 20px;
 }
 body[data-style="neon"] .module-item {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-subtle);
+  border-radius: 14px;
 }
-body[data-style="neon"] .module-item:hover { background: rgba(0, 229, 255, 0.06); border-color: var(--border-gold); }
+body[data-style="neon"] .module-item:hover { background: rgba(0, 229, 255, 0.06); border-color: var(--accent-gold); }
 body[data-style="neon"] .module-item.loaded { border-left: 3px solid var(--accent-success); }
 body[data-style="neon"] .module-item.loading { border-left: 3px solid var(--accent-gold); }
 body[data-style="neon"] .module-item.error { border-left: 3px solid var(--accent-error); }
 body[data-style="neon"] .console-log {
   background: #000;
-  color: var(--accent-success);
-  border: 1px solid var(--border-subtle);
+  color: var(--accent-gold-light);
+  border: 1px solid var(--border-gold);
+  border-radius: 14px;
 }
-body[data-style="neon"] .console-log .error { color: var(--accent-error); }
-body[data-style="neon"] .console-log .warn { color: var(--accent-warning); }
+body[data-style="neon"] .console-log .error { color: #ff2bd6; }
+body[data-style="neon"] .console-log .warn { color: #ffb800; }
 body[data-style="neon"] .console-log .info { color: var(--accent-gold); }
 
 /* === Тосты достижений === */
 body[data-style="neon"] .achievement-toast {
   background: #0a0a14;
   border: 2px solid var(--accent-gold);
-  box-shadow: 0 0 40px rgba(0, 229, 255, 0.4), 0 10px 30px rgba(0,0,0,0.7);
+  border-radius: 14px;
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.6), 0 10px 30px rgba(0, 0, 0, 0.6);
 }
 body[data-style="neon"] .achievement-toast .ach-icon { color: var(--accent-gold); filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.6)); }
 body[data-style="neon"] .achievement-toast .ach-title { color: var(--accent-gold); text-shadow: 0 0 10px rgba(0, 229, 255, 0.6); }
 body[data-style="neon"] .achievement-toast .ach-desc { color: var(--text-secondary); }
-body[data-style="neon"] .achievement-particle { background: var(--accent-gold); box-shadow: 0 0 8px rgba(0, 229, 255, 0.8); }
+body[data-style="neon"] .achievement-particle { background: var(--accent-gold); }
 
 /* === Анимации === */
 @keyframes levelPulse {
   0%, 100% { transform: scale(1); filter: drop-shadow(0 0 2px var(--accent-gold)); }
   50% { transform: scale(1.1); filter: drop-shadow(0 0 8px var(--accent-gold)); }
 }
+@keyframes xpShine { 0% { left: -100%; } 100% { left: 100%; } }

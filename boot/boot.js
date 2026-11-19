@@ -2,11 +2,10 @@
 (function() {
   'use strict';
 
-	var proto = 'https:' + '//';
+  var proto = 'https:' + '//';
   var host = 'raw' + '.githubusercontent.com';
   var repo = 'johnntv6996-png' + '/' + 'Fitness-Elite-v2' + '/main/';
   var GITHUB_BASE = proto + host + '/' + repo;
-
   var ENV_KEY = 'fe_v2_env';
 
   function detectEnv() {
@@ -47,7 +46,8 @@
         var jobs = (manifest.files || []).map(function(entry) {
           var f = byRel[entry.path];
           if (!f) { if (entry.required) missing.push(entry.path); return Promise.resolve(); }
-          return f.text().then(function(content) {
+          var reader = entry.type === 'font' ? Promise.resolve(f) : f.text();
+          return reader.then(function(content) {
             records.push({ path: entry.path, type: entry.type, id: entry.id || null, required: !!entry.required, content: content, version: manifest.version });
           });
         });
@@ -86,23 +86,20 @@
 
   function fetchTimeout(url, ms) {
     return new Promise(function(resolve, reject) {
-      var ac = new AbortController();
-      var t = setTimeout(function() { ac.abort(); }, ms || 5000);
-      fetch(url, { signal: ac.signal, cache: 'no-store' })
+      var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      var t = setTimeout(function() { if (ctrl) ctrl.abort(); reject(new Error('Timeout')); }, ms || 8000);
+      fetch(url, { signal: ctrl ? ctrl.signal : undefined, cache: 'no-store' })
         .then(function(r) { clearTimeout(t); if (!r.ok) reject(new Error('HTTP ' + r.status)); else resolve(r); })
         .catch(function(e) { clearTimeout(t); reject(e); });
     });
   }
-
   function downloadFiles(baseUrl, manifest) {
     var list = manifest.files || [];
     var result = [], missing = [];
     var jobs = list.map(function(entry) {
       var url = baseUrl + entry.path + (baseUrl.indexOf('http') === 0 ? '?t=' + Date.now() : '');
       return fetchTimeout(url, 8000)
-        .then(function(r) {
-          return entry.type === 'font' ? r.blob() : r.text();
-        })
+        .then(function(r) { return entry.type === 'font' ? r.blob() : r.text(); })
         .then(function(data) {
           if (!data || (typeof data === 'string' && !data.trim())) throw new Error('Empty file');
           result.push({
@@ -123,8 +120,7 @@
   }
 
   function mountBundle(manifest, files) {
-    var byPath = {};
-    var fontUrls = {};
+    var byPath = {}, fontUrls = {};
     for (var i = 0; i < files.length; i++) {
       byPath[files[i].path] = files[i];
       if (files[i].type === 'font' && files[i].content instanceof Blob) {
@@ -143,9 +139,7 @@
 
     for (var c = 0; c < cssList.length; c++) {
       var cssText = cssList[c].content;
-      for (var fPath in fontUrls) {
-        cssText = cssText.split(fPath).join(fontUrls[fPath]);
-      }
+      for (var fPath in fontUrls) cssText = cssText.split(fPath).join(fontUrls[fPath]);
       var st = document.createElement('style');
       st.setAttribute('data-file', cssList[c].path);
       st.textContent = cssText;
@@ -175,19 +169,21 @@
     });
   }
 
-  function checkUpdates(localManifest) {
-    if (!navigator.onLine) return;
-    fetchTimeout(GITHUB_BASE + 'manifest.json?t=' + Date.now(), 4000)
+  function checkRemoteUpdate(currentVersion) {
+    if (CURRENT_ENV !== 'prod') return;
+    fetchTimeout(GITHUB_BASE + 'manifest.json?t=' + Date.now(), 5000)
       .then(function(r) { return r.json(); })
-      .then(function(remote) {
-        if (!remote || !remote.version || remote.version === localManifest.version) return;
-        if (window.Shell && window.Shell.showUpdateToast) {
-          window.Shell.showUpdateToast(localManifest.version, remote, function() {
-            return downloadFiles(GITHUB_BASE, remote).then(function(files) {
-              return FileDB.saveFiles(CURRENT_ENV, files).then(function() {
-                return FileDB.setMeta('manifest_' + CURRENT_ENV, remote);
-              });
-            }).then(function() { location.reload(); });
+      .then(function(remoteManifest) {
+        if (!remoteManifest || !remoteManifest.version || remoteManifest.version === currentVersion) return;
+        if (window.Shell && typeof window.Shell.showUpdateToast === 'function') {
+          window.Shell.showUpdateToast(currentVersion, remoteManifest, function() {
+            return downloadFiles(GITHUB_BASE, remoteManifest).then(function(newFiles) {
+              return FileDB.clearEnv('prod').then(function() {
+                return FileDB.saveFiles('prod', newFiles);
+              }).then(function() {
+                return FileDB.setMeta('manifest_prod', remoteManifest);
+              }).then(function() { location.reload(); });
+            });
           });
         }
       })
@@ -195,42 +191,40 @@
   }
 
   function start() {
-    var metaKey = 'manifest_' + CURRENT_ENV;
-    Promise.all([FileDB.getMeta(metaKey), FileDB.getAllFiles(CURRENT_ENV)])
-      .then(function(res) {
-        var savedManifest = res[0];
-        var savedFiles = res[1];
+    renderStatus('FITNESS ELITE', 'Инициализация ядра...', false);
 
-        if (savedManifest && Array.isArray(savedManifest.files) && savedFiles && savedFiles.length > 0) {
-          return mountBundle(savedManifest, savedFiles).then(function() { checkUpdates(savedManifest); });
+    Promise.all([FileDB.getMeta('manifest_' + CURRENT_ENV), FileDB.getAllFiles(CURRENT_ENV)])
+      .then(function(res) {
+        var cachedManifest = res.shift();
+        var cachedFiles = res.shift();
+
+        if (cachedManifest && cachedFiles && cachedFiles.length > 0) {
+          return mountBundle(cachedManifest, cachedFiles).then(function() {
+            checkRemoteUpdate(cachedManifest.version);
+          });
         }
 
-        renderStatus('Первый запуск', 'Загрузка файлов с GitHub...', false);
-        return fetchTimeout(GITHUB_BASE + 'manifest.json?t=' + Date.now(), 5000)
+        renderStatus('Первая загрузка', 'Скачивание файлов приложения...', false);
+        return fetchTimeout(GITHUB_BASE + 'manifest.json?t=' + Date.now(), 7000)
           .then(function(r) { return r.json(); })
-          .then(function(manifest) {
-            return downloadFiles(GITHUB_BASE, manifest).then(function(files) { return { manifest: manifest, files: files }; });
-          })
+          .then(function(m) { return downloadFiles(GITHUB_BASE, m).then(function(f) { return { manifest: m, files: f }; }); })
           .catch(function() {
-            renderStatus('Офлайн-режим', 'Поиск локальных файлов в корневой папке...', false);
             return fetchTimeout('./manifest.json', 3000)
               .then(function(r) { return r.json(); })
-              .then(function(manifest) {
-                return downloadFiles('./', manifest).then(function(files) { return { manifest: manifest, files: files }; });
-              });
+              .then(function(m) { return downloadFiles('./', m).then(function(f) { return { manifest: m, files: f }; }); });
           })
           .then(function(bundle) {
-            return FileDB.saveFiles(CURRENT_ENV, bundle.files)
-              .then(function() { return FileDB.setMeta(metaKey, bundle.manifest); })
-              .then(function() { return mountBundle(bundle.manifest, bundle.files); });
+            return FileDB.saveFiles(CURRENT_ENV, bundle.files).then(function() {
+              return FileDB.setMeta('manifest_' + CURRENT_ENV, bundle.manifest);
+            }).then(function() { return mountBundle(bundle.manifest, bundle.files); });
           });
       })
       .catch(function(err) {
         renderStatus(
           'Ошибка запуска',
-          'Нет подключения к GitHub, а локальные файлы отсутствуют в корневой папке.',
+          'Не удалось загрузить приложение ни из сети, ни из локальной папки.',
           true,
-          err.missing || ['manifest.json']
+          err && err.missing ? err.missing : ['manifest.json']
         );
       });
   }

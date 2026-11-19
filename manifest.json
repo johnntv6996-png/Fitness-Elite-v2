@@ -32,6 +32,7 @@
     { "path": "core/store.js", "type": "js", "required": true },
     { "path": "core/math.js", "type": "js", "required": true },
     { "path": "core/styles.js", "type": "js", "required": true },
+    { "path": "core/media.js", "type": "js", "required": true },
 
     { "path": "app/shell.js", "type": "js", "required": true },
 

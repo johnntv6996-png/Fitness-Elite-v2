@@ -87,11 +87,13 @@
   function copyProdToDev() {
     return Promise.all([getMeta('manifest_prod'), getAllFiles('prod')])
       .then(function(res) {
-        if (!res || !res.length) throw new Error('В PROD нет файлов для копирования');
+        var manifest = res.shift();
+        var files = res.shift();
+        if (!manifest || !files || !files.length) throw new Error('В PROD нет файлов для копирования');
         return clearEnv('dev').then(function() {
-          return saveFiles('dev', res);
+          return saveFiles('dev', files);
         }).then(function() {
-          return setMeta('manifest_dev', JSON.parse(JSON.stringify(res)));
+          return setMeta('manifest_dev', JSON.parse(JSON.stringify(manifest)));
         });
       });
   }
@@ -99,11 +101,13 @@
   function copyDevToProd() {
     return Promise.all([getMeta('manifest_dev'), getAllFiles('dev')])
       .then(function(res) {
-        if (!res || !res.length) throw new Error('В DEV нет файлов для переноса');
+        var manifest = res.shift();
+        var files = res.shift();
+        if (!manifest || !files || !files.length) throw new Error('В DEV нет файлов для переноса');
         return clearEnv('prod').then(function() {
-          return saveFiles('prod', res);
+          return saveFiles('prod', files);
         }).then(function() {
-          return setMeta('manifest_prod', JSON.parse(JSON.stringify(res)));
+          return setMeta('manifest_prod', JSON.parse(JSON.stringify(manifest)));
         });
       });
   }

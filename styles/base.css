@@ -1,6 +1,4 @@
 /* styles/base.css */
-/* Только базовые переменные и сброс. Визуал компонентов — в styles/builtin/*.css */
-
 :root {
   /* === Фоны === */
   --bg-primary: #0a0a0f;
@@ -26,12 +24,12 @@
   --accent-info: #60a5fa;
   --accent-neon: #60a5fa;
 
-  /* === Границы (общие) === */
+  /* === Границы === */
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-gold: rgba(212, 175, 55, 0.3);
   --border-strong: rgba(255, 255, 255, 0.15);
 
-  /* === Тени (общие) === */
+  /* === Тени === */
   --shadow-gold: 0 0 40px rgba(212, 175, 55, 0.2);
   --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.2);
   --shadow-modal: 0 10px 40px rgba(0, 0, 0, 0.5);
@@ -73,7 +71,7 @@ body {
   background-image: var(--body-bg-image);
 }
 
-/* === Формы (база, цвета — в стилях) === */
+/* === Формы === */
 select,
 input[type="text"],
 input[type="number"],
@@ -96,7 +94,7 @@ select:focus, input:focus, textarea:focus { outline: none; }
 .screen { display: none; }
 .screen.active { display: block; animation: fadeIn 0.4s ease-out; }
 
-/* === Анимации (общие) === */
+/* === Анимации === */
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes shimmer { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }

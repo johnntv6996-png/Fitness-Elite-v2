@@ -4,26 +4,34 @@
 
   var listeners = {};
 
-  function on(event, fn) {
+  function on(eventName, fn) {
     if (typeof fn !== 'function') return function() {};
-    if (!listeners[event]) listeners[event] = [];
-    listeners[event].push(fn);
-    return function off() {
-      var arr = listeners[event];
-      if (!arr) return;
-      var i = arr.indexOf(fn);
-      if (i !== -1) arr.splice(i, 1);
-    };
+    if (!listeners[eventName]) listeners[eventName] = [];
+    listeners[eventName].push(fn);
+    return function off() { offEvent(eventName, fn); };
   }
 
-  function emit(event, payload) {
-    var arr = listeners[event];
+  function once(eventName, fn) {
+    var off = on(eventName, function handler(payload) { off(); fn(payload); });
+    return off;
+  }
+
+  function offEvent(eventName, fn) {
+    var arr = listeners[eventName];
     if (!arr) return;
-    var copy = arr.slice();
-    for (var i = 0; i < copy.length; i++) {
-      try { copy[i](payload); } catch (e) { console.error('[Events]', event, e); }
+    var idx = arr.indexOf(fn);
+    if (idx !== -1) arr.splice(idx, 1);
+    if (arr.length === 0) delete listeners[eventName];
+  }
+
+  function emit(eventName, payload) {
+    var arr = listeners[eventName];
+    if (!arr || arr.length === 0) return;
+    var snapshot = arr.slice();
+    for (var i = 0; i < snapshot.length; i++) {
+      try { snapshot[i](payload); } catch (e) { console.error('[Events] Error in ' + eventName, e); }
     }
   }
 
-  window.Events = { on: on, emit: emit };
+  window.Events = { on: on, once: once, off: offEvent, emit: emit };
 })();
