@@ -224,3 +224,15 @@ body.sidebar-open .main-content { margin-left: var(--sidebar-width); max-width: 
   .start-circle span { font-size: 0.75em; }
 }
 #styleQuickPicker { backdrop-filter: blur(50px); -webkit-backdrop-filter: blur(50px); }
+
+/* === План тренировок (Plan) === */
+.plan-day-card { background: var(--bg-card); border-radius: 14px; margin-bottom: 12px; border: 1px solid var(--border-subtle); overflow: hidden; transition: all 0.3s; }
+.plan-day-card:hover { border-color: var(--border-gold); }
+.plan-day-card.today { border-color: var(--accent-gold); box-shadow: 0 0 20px rgba(212, 175, 55, 0.15); }
+.plan-day-header { padding: 16px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
+.plan-day-header:hover { background: rgba(255, 255, 255, 0.03); }
+.plan-day-header.active { background: rgba(212, 175, 55, 0.08); border-bottom: 1px solid var(--border-subtle); }
+.plan-day-body { padding: 20px; display: none; }
+.plan-day-body.active { display: block; animation: fadeIn 0.3s ease-out; }
+.plan-ex { background: var(--bg-primary); padding: 12px 14px; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; border-left: 3px solid var(--accent-gold); }
+.today-dot { width: 8px; height: 8px; background: var(--accent-success); border-radius: 50%; display: inline-block; margin-left: 8px; box-shadow: 0 0 8px var(--accent-success); }
