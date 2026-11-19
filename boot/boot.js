@@ -99,13 +99,15 @@
     var result = [], missing = [];
     var jobs = list.map(function(entry) {
       var url = baseUrl + entry.path + (baseUrl.indexOf('http') === 0 ? '?t=' + Date.now() : '');
-      return fetchTimeout(url, 6000)
-        .then(function(r) { return r.text(); })
-        .then(function(text) {
-          if (!text || !text.trim()) throw new Error('Empty file');
+      return fetchTimeout(url, 8000)
+        .then(function(r) {
+          return entry.type === 'font' ? r.blob() : r.text();
+        })
+        .then(function(data) {
+          if (!data || (typeof data === 'string' && !data.trim())) throw new Error('Empty file');
           result.push({
             path: entry.path, type: entry.type, id: entry.id || null,
-            required: !!entry.required, content: text, version: manifest.version
+            required: !!entry.required, content: data, version: manifest.version
           });
         })
         .catch(function() { if (entry.required) missing.push(entry.path); });
@@ -122,21 +124,31 @@
 
   function mountBundle(manifest, files) {
     var byPath = {};
-    for (var i = 0; i < files.length; i++) byPath[files[i].path] = files[i];
+    var fontUrls = {};
+    for (var i = 0; i < files.length; i++) {
+      byPath[files[i].path] = files[i];
+      if (files[i].type === 'font' && files[i].content instanceof Blob) {
+        fontUrls[files[i].path] = URL.createObjectURL(files[i].content);
+      }
+    }
 
     var ordered = manifest.files || [];
     var cssList = [], scriptList = [];
     for (var j = 0; j < ordered.length; j++) {
       var item = byPath[ordered[j].path];
-      if (!item) continue;
+      if (!item || item.type === 'font') continue;
       if (item.type === 'css') cssList.push(item);
       else scriptList.push(item);
     }
 
     for (var c = 0; c < cssList.length; c++) {
+      var cssText = cssList[c].content;
+      for (var fPath in fontUrls) {
+        cssText = cssText.split(fPath).join(fontUrls[fPath]);
+      }
       var st = document.createElement('style');
       st.setAttribute('data-file', cssList[c].path);
-      st.textContent = cssList[c].content;
+      st.textContent = cssText;
       document.head.appendChild(st);
     }
 
