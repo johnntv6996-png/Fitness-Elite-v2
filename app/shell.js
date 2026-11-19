@@ -90,10 +90,10 @@
     if (window.Events) {
       Events.on('store:stats', updateSidebarStats);
       Events.on('store:user_name', updateSidebarStats);
+      Events.on('store:user_avatar', updateSidebarStats);
     }
 
     addNav('home', 'Главная', 'ph-house');
-    registerScreen('dev', renderDevPanel);
     navigate('home');
   }
 
@@ -102,6 +102,11 @@
     if (nameEl) {
       var nm = Store.get('user_name', '');
       nameEl.innerHTML = '<span>' + Store.esc(nm || 'Гость') + '</span><i class="ph ph-pencil-simple"></i>';
+    }
+    var avEl = document.getElementById('feSideAvatar');
+    if (avEl) {
+      var av = Store.get('user_avatar', 'ph-user-circle');
+      avEl.innerHTML = '<i class="ph ' + Store.esc(av) + '"></i>';
     }
     if (typeof MathCore === 'undefined') return;
     var st = MathCore.getStats();
@@ -112,7 +117,6 @@
     var nd = document.getElementById('feXpNeed'); if (nd) nd.textContent = need;
     var fl = document.getElementById('feXpFill'); if (fl) fl.style.width = pct + '%';
   }
-
   function toggleSidebar(force) {
     var sb = document.getElementById('feSidebar');
     var ov = document.getElementById('feOverlay');
@@ -198,60 +202,42 @@
   }
 
   function openProfileModal() {
+    var icons = ['ph-user-circle', 'ph-barbell', 'ph-flame', 'ph-lightning', 'ph-trophy', 'ph-crown', 'ph-medal', 'ph-target'];
+    var curAv = Store.get('user_avatar', 'ph-user-circle');
     var modal = document.createElement('div');
     modal.className = 'ex-modal';
+    var icHtml = icons.map(function(ic) {
+      var sel = ic === curAv ? 'btn-primary' : 'btn-secondary';
+      return '<button type="button" class="btn ' + sel + '" data-av="' + ic + '" style="padding:10px;font-size:1.3em"><i class="ph ' + ic + '"></i></button>';
+    }).join('');
+
     modal.innerHTML =
       '<div class="ex-modal-content" style="max-width:400px">' +
         '<h3 style="color:var(--accent-gold);margin-bottom:12px">Профиль</h3>' +
-        '<input id="prNameInp" type="text" value="' + Store.esc(Store.get('user_name', '')) + '" placeholder="Твоё имя" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border-subtle);background:var(--bg-primary);color:var(--text-primary);margin-bottom:14px">' +
+        '<label class="form-label">Имя</label>' +
+        '<input id="prNameInp" class="form-input" type="text" value="' + Store.esc(Store.get('user_name', '')) + '" placeholder="Твоё имя" style="margin-bottom:14px">' +
+        '<label class="form-label">Иконка профиля</label>' +
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px" id="prAvGrid">' + icHtml + '</div>' +
         '<div style="display:flex;gap:8px;justify-content:flex-end">' +
           '<button class="btn btn-secondary" id="prCancel">Отмена</button>' +
           '<button class="btn btn-primary" id="prSave">Сохранить</button>' +
         '</div>' +
       '</div>';
     document.body.appendChild(modal);
+    var pickedAv = curAv;
+    modal.querySelectorAll('[data-av]').forEach(function(b) {
+      b.onclick = function() {
+        pickedAv = b.getAttribute('data-av');
+        modal.querySelectorAll('[data-av]').forEach(function(x) { x.className = 'btn ' + (x === b ? 'btn-primary' : 'btn-secondary'); });
+      };
+    });
     document.getElementById('prCancel').onclick = function() { modal.remove(); };
     document.getElementById('prSave').onclick = function() {
       Store.set('user_name', document.getElementById('prNameInp').value.trim());
+      Store.set('user_avatar', pickedAv);
       modal.remove();
       notify('Профиль сохранён');
     };
-  }
-
-  function renderDevPanel(container) {
-    Promise.all([FileDB.getMeta('manifest_dev'), FileDB.getAllFiles('dev')]).then(function(res) {
-      var manifest = res || { version: '0.1.4-dev', files: [] };
-      var files = res || [];
-      var listHtml = files.map(function(f, idx) {
-        return '<div class="module-item"><span style="font-size:0.9em">' + Store.esc(f.path) + '</span>' +
-          '<div style="display:flex;gap:6px"><button class="btn btn-secondary" data-edit="' + idx + '" style="padding:6px 12px">Править</button></div></div>';
-      }).join('');
-      container.innerHTML =
-        '<div class="dev-panel">' +
-          '<h3 style="color:var(--accent-gold);margin-bottom:14px">Панель разработчика (DEV)</h3>' +
-          '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">' +
-            '<button class="btn btn-primary" id="devCopyProdBtn">Копия из PROD</button>' +
-            '<button class="btn btn-secondary" id="devToProdBtn">В режим PROD</button>' +
-          '</div>' + listHtml +
-        '</div><div id="devEditorWrap"></div>';
-      document.getElementById('devToProdBtn').onclick = function() { window.App.switchEnv('prod'); };
-      document.getElementById('devCopyProdBtn').onclick = function() {
-        FileDB.copyProdToDev().then(function() { notify('Скопировано'); renderDevPanel(container); }).catch(function(e) { notify(e.message, true); });
-      };
-      container.querySelectorAll('[data-edit]').forEach(function(b) {
-        b.onclick = function() {
-          var f = files[parseInt(b.getAttribute('data-edit'), 10)];
-          document.getElementById('devEditorWrap').innerHTML =
-            '<div class="dev-panel"><h4 style="color:var(--accent-gold);margin-bottom:8px">' + Store.esc(f.path) + '</h4>' +
-            '<textarea id="edCode" rows="12" style="width:100%;padding:10px;background:#000;color:#4ade80;font-family:monospace">' + Store.esc(f.content) + '</textarea>' +
-            '<button class="btn btn-primary" id="edSave" style="margin-top:10px">Сохранить</button></div>';
-          document.getElementById('edSave').onclick = function() {
-            f.content = document.getElementById('edCode').value;
-            FileDB.saveSingleFile('dev', f).then(function() { location.reload(); });
-          };
-        };
-      });
-    });
   }
 
   function notify(msg, isError) {

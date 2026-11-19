@@ -84,14 +84,14 @@
     return saveFiles(env, [fileObj]);
   }
 
-  function copyProdToDev() {
-    return Promise.all([getMeta('manifest_prod'), getAllFiles('prod')])
+  function copyDevToProd() {
+    return Promise.all([getMeta('manifest_dev'), getAllFiles('dev')])
       .then(function(res) {
-        if (!res[0] || !res[1].length) throw new Error('В PROD нет файлов для копирования');
-        return clearEnv('dev').then(function() {
-          return saveFiles('dev', res[1]);
+        if (!res[0] || !res[1].length) throw new Error('В DEV нет файлов');
+        return clearEnv('prod').then(function() {
+          return saveFiles('prod', res[1]);
         }).then(function() {
-          return setMeta('manifest_dev', JSON.parse(JSON.stringify(res[0])));
+          return setMeta('manifest_prod', JSON.parse(JSON.stringify(res[0])));
         });
       });
   }
@@ -103,6 +103,8 @@
     saveSingleFile: saveSingleFile,
     getAllFiles: getAllFiles,
     clearEnv: clearEnv,
-    copyProdToDev: copyProdToDev
+    copyProdToDev: copyProdToDev,
+    copyDevToProd: copyDevToProd
   };
 })();
+
