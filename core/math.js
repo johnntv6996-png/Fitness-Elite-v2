@@ -1,4 +1,4 @@
-// core/helpers.js
+// core/math.js
 (function() {
   'use strict';
 
@@ -97,7 +97,7 @@
     return st;
   }
 
-  window.Helpers = {
+  window.MathCore = {
     formatLocalDate: formatLocalDate,
     todayStr: todayStr,
     addDays: addDays,
