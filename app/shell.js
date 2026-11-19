@@ -137,7 +137,7 @@
 
     var achText = document.getElementById('feAchText');
     if (achText) {
-      var thresholds =, nextAch = null;
+      var thresholds = 0, nextAch = null;
       for (var i = 0; i < thresholds.length; i++) if (lvl < thresholds[i]) { nextAch = thresholds[i]; break; }
       if (nextAch) {
         var curTot = MathCore.totalXp(st);
