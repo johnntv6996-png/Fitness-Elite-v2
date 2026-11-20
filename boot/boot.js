@@ -30,41 +30,55 @@
       try { localStorage.setItem(ENV_KEY, targetEnv); } catch (e) {}
       location.reload();
     },
-    importLocalFolder: function(fileList) {
+    importLocalFiles: function(fileList) {
       if (!fileList || !fileList.length) return;
-      var byRel = {};
+      var byName = {}, byRel = {};
       for (var i = 0; i < fileList.length; i++) {
-        var parts = fileList[i].webkitRelativePath.split('/');
-        parts.shift();
-        var rel = parts.join('/');
-        if (rel) byRel[rel] = fileList[i];
+        var f = fileList[i];
+        byName[f.name] = f;
+        if (f.webkitRelativePath) {
+          var parts = f.webkitRelativePath.split('/');
+          parts.shift();
+          var rel = parts.join('/');
+          if (rel) byRel[rel] = f;
+        }
       }
-      if (!byRel['manifest.json']) { renderStatus('Ошибка', 'В папке нет manifest.json', true); return; }
-      byRel['manifest.json'].text().then(function(txt) {
+      var manifestFile = byRel['manifest.json'] || byName['manifest.json'];
+      if (!manifestFile) { renderStatus('Ошибка', 'Не выбран файл manifest.json', true); return; }
+
+      manifestFile.text().then(function(txt) {
         var manifest = JSON.parse(txt);
         var list = manifest.files || [];
         var total = list.length, done = 0;
         var missing = [], records = [];
-        renderStatus('Импорт папки', 'Чтение файлов...', false, null, 0);
+        renderStatus('Импорт файлов', 'Чтение...', false, null, 0);
+
         var jobs = list.map(function(entry) {
-          var f = byRel[entry.path];
-          if (!f) {
+          var shortName = entry.path.split('/').pop();
+          var file = byRel[entry.path] || byName[shortName];
+          if (!file) {
             if (entry.required) missing.push(entry.path);
             done++; updateProgress(done, total);
             return Promise.resolve();
           }
-          var reader = entry.type === 'font' ? Promise.resolve(f) : f.text();
+          var reader = entry.type === 'font' ? Promise.resolve(file) : file.text();
           return reader.then(function(content) {
-            records.push({ path: entry.path, type: entry.type, id: entry.id || null, required: !!entry.required, content: content, version: manifest.version });
-            done++; updateProgress(done, total, 'Файл: ' + entry.path.split('/').pop());
+            records.push({
+              path: entry.path, type: entry.type, id: entry.id || null,
+              required: !!entry.required, content: content, version: manifest.version
+            });
+            done++; updateProgress(done, total, 'Файл: ' + shortName);
           });
         });
+
         return Promise.all(jobs).then(function() {
-          if (missing.length) { renderStatus('Не хватает файлов', 'Проверь состав папки', true, missing); return; }
+          if (missing.length) { renderStatus('Не хватает файлов', 'Выдели все файлы из папок boot, core, app, modules, styles', true, missing); return; }
           return FileDB.saveFiles(CURRENT_ENV, records).then(function() {
             return FileDB.setMeta('manifest_' + CURRENT_ENV, manifest);
           }).then(function() { location.reload(); });
         });
+      }).catch(function(e) {
+        renderStatus('Ошибка импорта', e.message, true);
       });
     }
   };
@@ -85,9 +99,12 @@
       : '';
     var retryHtml = isError
       ? '<div style="display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap">' +
-          '<button onclick="location.reload()" style="padding:10px 22px;border-radius:10px;border:none;background:#d4af37;color:#000;font-weight:700;cursor:pointer">Повторить</button>' +
-          '<label style="padding:10px 20px;border-radius:10px;border:1px solid #d4af37;color:#d4af37;font-weight:600;cursor:pointer">' +
-            'Выбрать папку с файлами<input type="file" webkitdirectory directory multiple style="display:none" onchange="App.importLocalFolder(this.files)">' +
+          '<button onclick="location.reload()" style="padding:10px 20px;border-radius:10px;border:none;background:#d4af37;color:#000;font-weight:700;cursor:pointer">Повторить</button>' +
+          '<label style="padding:10px 18px;border-radius:10px;border:1px solid #d4af37;color:#d4af37;font-weight:600;cursor:pointer">' +
+            'Выбрать файлы<input type="file" multiple style="display:none" onchange="App.importLocalFiles(this.files)">' +
+          '</label>' +
+          '<label style="padding:10px 18px;border-radius:10px;border:1px solid rgba(212,175,55,0.5);color:#d4af37;font-size:0.9em;cursor:pointer">' +
+            'Выбрать папку (ПК)<input type="file" webkitdirectory directory multiple style="display:none" onchange="App.importLocalFiles(this.files)">' +
           '</label>' +
         '</div>'
       : '';
@@ -98,7 +115,6 @@
         progressHtml + listHtml + retryHtml +
       '</div>';
   }
-
   function updateProgress(done, total, label) {
     var pct = total > 0 ? Math.round((done / total) * 100) : 0;
     var fill = document.getElementById('bootProgressFill');
@@ -118,6 +134,7 @@
         .catch(function(e) { clearTimeout(t); reject(e); });
     });
   }
+
   function downloadFiles(baseUrl, manifest) {
     var list = manifest.files || [];
     var total = list.length, done = 0;
@@ -184,13 +201,15 @@
       if (idx >= scriptList.length) return Promise.resolve();
       var file = scriptList[idx];
       return new Promise(function(resolve, reject) {
-        var blob = new Blob([file.content + '\n//# sourceURL=' + file.path], { type: 'application/javascript' });
-        var url = URL.createObjectURL(blob);
-        var s = document.createElement('script');
-        s.src = url;
-        s.onload = function() { URL.revokeObjectURL(url); resolve(); };
-        s.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Script error: ' + file.path)); };
-        document.body.appendChild(s);
+        try {
+          var s = document.createElement('script');
+          s.type = 'text/javascript';
+          s.text = file.content + '\n//# sourceURL=' + file.path;
+          document.body.appendChild(s);
+          resolve();
+        } catch (e) {
+          reject(new Error('Script error in ' + file.path + ': ' + e.message));
+        }
       }).then(function() { return runNext(idx + 1); });
     }
 
@@ -239,13 +258,13 @@
         }
 
         renderStatus('Первая загрузка', 'Скачивание файлов приложения...', false, null, 0);
-        return fetchTimeout(GITHUB_BASE + 'manifest.json?t=' + Date.now(), 7000)
+        return fetchTimeout('./manifest.json', 2500)
           .then(function(r) { return r.json(); })
-          .then(function(m) { return downloadFiles(GITHUB_BASE, m).then(function(f) { return { manifest: m, files: f }; }); })
+          .then(function(m) { return downloadFiles('./', m).then(function(f) { return { manifest: m, files: f }; }); })
           .catch(function() {
-            return fetchTimeout('./manifest.json', 3000)
+            return fetchTimeout(GITHUB_BASE + 'manifest.json?t=' + Date.now(), 7000)
               .then(function(r) { return r.json(); })
-              .then(function(m) { return downloadFiles('./', m).then(function(f) { return { manifest: m, files: f }; }); });
+              .then(function(m) { return downloadFiles(GITHUB_BASE, m).then(function(f) { return { manifest: m, files: f }; }); });
           })
           .then(function(bundle) {
             return FileDB.saveFiles(CURRENT_ENV, bundle.files).then(function() {
@@ -256,7 +275,7 @@
       .catch(function(err) {
         renderStatus(
           'Ошибка запуска',
-          'Не удалось загрузить приложение ни из сети, ни из локальной папки.',
+          'Не удалось загрузить файлы автоматически. Нажми «Выбрать файлы» и выдели все файлы проекта.',
           true,
           err && err.missing ? err.missing : ['manifest.json']
         );
