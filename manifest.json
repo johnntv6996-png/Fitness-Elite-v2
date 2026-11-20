@@ -41,7 +41,8 @@
     { "path": "modules/dev-panel.js", "type": "module", "id": "dev-panel", "required": false },
 		{ "path": "modules/plan.js", "type": "module", "id": "plan", "required": false },
 		{ "path": "modules/workout-flow.js", "type": "module", "id": "workout-flow", "required": false },
-    { "path": "modules/stats.js", "type": "module", "id": "stats", "required": false }
+    { "path": "modules/stats.js", "type": "module", "id": "stats", "required": false },
+    { "path": "modules/achievements.js", "type": "module", "id": "achievements", "required": false }
 
   ]
 }

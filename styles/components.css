@@ -297,3 +297,11 @@ body.sidebar-open .main-content { margin-left: var(--sidebar-width); max-width: 
 .hist-item.done { border-left: 3px solid var(--accent-success); }
 .hist-item.skipped { border-left: 3px solid var(--accent-error); }
 .hist-item.partial { border-left: 3px solid var(--accent-warning); }
+
+/* === Достижения (Achievements) === */
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.ach-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 16px; display: flex; gap: 12px; align-items: center; transition: all 0.2s; opacity: 0.55; }
+.ach-card.unlocked { opacity: 1; border-color: var(--border-gold); background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(212, 175, 55, 0.02)); }
+.ach-card.unlocked:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); }
+.ach-badge { width: 46px; height: 46px; border-radius: 12px; background: var(--bg-primary); border: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: var(--text-muted); flex-shrink: 0; }
+.ach-card.unlocked .ach-badge { border-color: var(--accent-gold); color: var(--accent-gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.25); }
