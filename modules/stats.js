@@ -1,26 +1,65 @@
-/* === Статистика и календарь (Stats) === */
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px; }
-.stat-box { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 14px; padding: 14px 10px; text-align: center; }
-.stat-box .val { font-family: var(--font-display); font-size: 1.6em; font-weight: 800; color: var(--accent-gold); line-height: 1.1; }
-.stat-box .lbl { font-size: 0.75em; opacity: 0.7; margin-top: 4px; }
+// modules/stats.js
+(function() {
+  'use strict';
 
-.cal-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
-.cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; font-size: 0.72em; opacity: 0.6; margin-bottom: 6px; font-weight: 600; }
-.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-.cal-day { aspect-ratio: 1; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.85em; font-weight: 600; background: var(--bg-primary); border: 1px solid var(--border-subtle); cursor: pointer; transition: all 0.15s; }
-.cal-day.empty { background: transparent; border: none; cursor: default; }
-.cal-day.done { background: rgba(74, 222, 128, 0.18); border-color: var(--accent-success); color: var(--accent-success); }
-.cal-day.partial { background: rgba(251, 191, 36, 0.18); border-color: var(--accent-warning); color: var(--accent-warning); }
-.cal-day.skipped { background: rgba(248, 113, 113, 0.15); border-color: var(--accent-error); color: var(--accent-error); }
-.cal-day.today { box-shadow: 0 0 0 2px var(--accent-gold); }
+  var MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  var state = { year: new Date().getFullYear(), month: new Date().getMonth() };
 
-.hist-item { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
-.hist-item:hover { border-color: var(--border-gold); transform: translateY(-1px); }
-.hist-item.done { border-left: 3px solid var(--accent-success); }
-.hist-item.skipped { border-left: 3px solid var(--accent-error); }
-.hist-item.partial { border-left: 3px solid var(--accent-warning); }
+  function getHistoryMap() {
+    var hist = Store.get('history', []);
+    var map = {};
+    for (var i = 0; i < hist.length; i++) {
+      if (hist[i] && hist[i].date) map[hist[i].date] = hist[i];
+    }
+    return map;
+  }
 
+  function getDayStatus(rec) {
+    if (!rec) return 'none';
+    if (rec.skipped) return 'skipped';
+    if (rec.xpDayAwarded) return 'done';
+    if (Array.isArray(rec.exercises) && rec.exercises.length > 0) return 'partial';
+    if (Array.isArray(rec.details)) {
+      for (var i = 0; i < rec.details.length; i++) {
+        var sets = rec.details[i] && rec.details[i].sets;
+        if (Array.isArray(sets) && sets.some(Boolean)) return 'partial';
+      }
+    }
+    return 'none';
+  }
+
+  function renderCalendar(histMap) {
+    var y = state.year, m = state.month;
+    var firstDay = new Date(y, m, 1);
+    var startOffset = (firstDay.getDay() + 6) % 7;
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var todayStr = MathCore.todayStr();
+
+    var cells = '';
+    for (var e = 0; e < startOffset; e++) cells += '<div class="cal-day empty"></div>';
+
+    for (var d = 1; d <= daysInMonth; d++) {
+      var dateStr = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      var st = getDayStatus(histMap[dateStr]);
+      var cls = 'cal-day' + (st !== 'none' ? ' ' + st : '') + (dateStr === todayStr ? ' today' : '');
+      cells += '<div class="' + cls + '" data-date="' + dateStr + '">' + d + '</div>';
+    }
+
+    return '<div class="cal-card">' +
+      '<div class="cal-head">' +
+        '<button class="btn btn-secondary" id="stPrevMonth" style="padding:6px 12px"><i class="ph ph-caret-left"></i></button>' +
+        '<div style="font-weight:700;color:var(--accent-gold)">' + MONTHS[m] + ' ' + y + '</div>' +
+        '<button class="btn btn-secondary" id="stNextMonth" style="padding:6px 12px"><i class="ph ph-caret-right"></i></button>' +
+      '</div>' +
+      '<div class="cal-weekdays"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>' +
+      '<div class="cal-days">' + cells + '</div>' +
+      '<div style="display:flex;gap:12px;justify-content:center;margin-top:12px;font-size:0.75em;opacity:0.75;flex-wrap:wrap">' +
+        '<span><i class="ph-fill ph-circle" style="color:var(--accent-success)"></i> Завершено</span>' +
+        '<span><i class="ph-fill ph-circle" style="color:var(--accent-warning)"></i> В процессе</span>' +
+        '<span><i class="ph-fill ph-circle" style="color:var(--accent-error)"></i> Пропуск</span>' +
+      '</div>' +
+    '</div>';
+  }
   function openDayModal(dateStr, rec) {
     var esc = Store.esc;
     var modal = document.createElement('div');
