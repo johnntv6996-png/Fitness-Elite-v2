@@ -60,10 +60,38 @@
 
     downloadDevZip: function() {
       window.open(DEV_ZIP_URL, '_blank');
+    },
+
+    getDisabledModules: function() {
+      try {
+        return JSON.parse(localStorage.getItem('fe_disabled_modules') || '[]');
+      } catch (error) {
+        return [];
+      }
     }
   };
 
-  function renderStatus(title, subtitle, isError, missingList, progress) {
+  function showError(title, error) {
+    var root = document.getElementById('app');
+
+    if (!root) {
+      alert(title + '\n\n' + (error && error.message ? error.message : error));
+      return;
+    }
+
+    root.innerHTML =
+      '<div style="min-height:100vh;padding:20px;display:flex;align-items:center;justify-content:center">' +
+        '<div style="max-width:500px;width:100%;background:#1a1a1a;color:#fff;padding:20px;border-radius:16px;border:1px solid #f87171">' +
+          '<h2 style="color:#f87171;margin:0 0 12px">' + title + '</h2>' +
+          '<div style="font-family:monospace;font-size:0.8em;white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow:auto">' +
+            (error && error.stack ? error.stack : (error && error.message ? error.message : String(error))) +
+          '</div>' +
+          '<button onclick="location.reload()" style="margin-top:16px;padding:12px 20px;border-radius:10px;border:none;background:#d4af37;color:#000;font-weight:700">Перезагрузить</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderStatus(title, subtitle, isError, progress) {
     var root = document.getElementById('app');
 
     if (!root) return;
@@ -79,20 +107,11 @@
         '<div id="bootProgressPct" style="font-size:0.78em;opacity:0.6;font-family:monospace">' + percent + '%</div>'
       : '';
 
-    var missingHtml = missingList && missingList.length
-      ? '<div style="margin:12px auto;padding:10px;max-width:400px;text-align:left;background:rgba(248,113,113,0.1);border:1px solid #f87171;border-radius:8px;font-size:0.8em">' +
-          '<strong>Не найдены:</strong><br>' + missingList.join('<br>') + '</div>'
-      : '';
-
-    var actions = CURRENT_ENV === 'dev'
-      ? '<button onclick="App.downloadDevZip()" style="margin-top:16px;padding:12px 22px;border-radius:10px;border:1px solid #d4af37;background:transparent;color:#d4af37;font-weight:700">Скачать ZIP ветки dev</button>'
-      : '<button onclick="location.reload()" style="margin-top:16px;padding:12px 22px;border-radius:10px;border:none;background:#d4af37;color:#000;font-weight:700">Повторить</button>';
-
     root.innerHTML =
       '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center">' +
         '<div style="font-size:1.4em;font-weight:800;color:' + (isError ? '#f87171' : '#d4af37') + ';margin-bottom:8px">' + title + '</div>' +
         '<div id="bootSubtitle" style="font-size:0.9em;opacity:0.75;max-width:400px">' + subtitle + '</div>' +
-        progressHtml + missingHtml + actions +
+        progressHtml +
       '</div>';
   }
 
@@ -143,13 +162,7 @@
     var files = [];
     var missing = [];
 
-    renderStatus(
-      'Загрузка',
-      'Чтение файлов проекта...',
-      false,
-      null,
-      0
-    );
+    renderStatus('Загрузка', 'Чтение файлов...', false, 0);
 
     var jobs = entries.map(function(entry) {
       var url = baseUrl + entry.path + '?t=' + Date.now();
@@ -181,7 +194,7 @@
 
     return Promise.all(jobs).then(function() {
       if (missing.length) {
-        var error = new Error('Не удалось загрузить обязательные файлы');
+        var error = new Error('Не удалось загрузить обязательные файлы: ' + missing.join(', '));
         error.missing = missing;
         throw error;
       }
@@ -265,17 +278,16 @@
     }
 
     return runScript(0).then(function() {
+      var disabled = App.getDisabledModules();
+
       modules.forEach(function(module, id) {
         if (!module || typeof module.init !== 'function') return;
+        if (disabled.indexOf(id) !== -1) return;
 
         try {
           module.init();
         } catch (error) {
           console.error('Ошибка инициализации модуля ' + id, error);
-
-          if (window.Shell && Shell.notify) {
-            Shell.notify('Модуль "' + id + '" не запустился', true);
-          }
         }
       });
     });
@@ -294,15 +306,13 @@
 
         if (window.Shell && typeof Shell.showUpdateToast === 'function') {
           Shell.showUpdateToast(currentVersion, remoteManifest, function() {
-            return FileDB.getMeta('manifest_prod').then(function(oldManifest) {
-              return downloadFiles(PROD_BASE, remoteManifest).then(function(files) {
-                return FileDB.clearEnv('prod').then(function() {
-                  return FileDB.saveFiles('prod', files);
-                }).then(function() {
-                  return FileDB.setMeta('manifest_prod', remoteManifest);
-                }).then(function() {
-                  location.reload();
-                });
+            return downloadFiles(PROD_BASE, remoteManifest).then(function(files) {
+              return FileDB.clearEnv('prod').then(function() {
+                return FileDB.saveFiles('prod', files);
+              }).then(function() {
+                return FileDB.setMeta('manifest_prod', remoteManifest);
+              }).then(function() {
+                location.reload();
               });
             });
           });
@@ -354,7 +364,6 @@
       'Первая загрузка',
       'Скачивание файлов приложения...',
       false,
-      null,
       0
     );
 
@@ -374,23 +383,25 @@
   }
 
   function start() {
-    renderStatus('FITNESS ELITE', 'Инициализация ядра...', false);
+    try {
+      renderStatus('FITNESS ELITE', 'Инициализация ядра...', false);
 
-    var startup = CURRENT_ENV === 'dev'
-      ? startDev()
-      : startProd();
+      var startup = CURRENT_ENV === 'dev'
+        ? startDev()
+        : startProd();
 
-    startup.catch(function(error) {
-      console.error('Ошибка запуска', error);
-
-      renderStatus(
-        'Ошибка запуска',
-        error && error.message ? error.message : 'Не удалось загрузить приложение',
-        true,
-        error && error.missing ? error.missing : []
-      );
-    });
+      startup.catch(function(error) {
+        console.error('Ошибка запуска', error);
+        showError('Ошибка запуска', error);
+      });
+    } catch (error) {
+      showError('Критическая ошибка boot.js', error);
+    }
   }
+
+  window.addEventListener('error', function(event) {
+    showError('Ошибка JavaScript', event.error || event.message);
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', start);
