@@ -86,6 +86,24 @@
       location.reload();
     },
 
+    updateDevFromGitHub: function() {
+      if (CURRENT_ENV !== 'dev') {
+        return Promise.reject(new Error('Обновление доступно только в DEV'));
+      }
+
+      return fetchTimeout(DEV_BASE + 'manifest.json?t=' + Date.now())
+        .then(function(response) {
+          return response.json();
+        })
+        .then(function(manifest) {
+          return downloadFiles(DEV_BASE, manifest).then(function(files) {
+            return FileDB.saveFiles('dev', files).then(function() {
+              return FileDB.setMeta('manifest_dev', manifest);
+            });
+          });
+        });
+    },
+
     openDevBranch: function() {
       window.open(DEV_BRANCH_URL, '_blank');
     },
@@ -235,10 +253,6 @@
       actions =
         '<div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;max-width:320px;width:100%">' +
           '<button onclick="App.reloadDevFromGitHub()" style="padding:12px;border-radius:10px;border:1px solid #d4af37;background:transparent;color:#d4af37;font-weight:700">Загрузить из ветки dev</button>' +
-          '<label style="padding:12px;border-radius:10px;border:none;background:#d4af37;color:#000;font-weight:700;text-align:center;cursor:pointer">' +
-            'Выбрать папку проекта' +
-            '<input type="file" webkitdirectory directory multiple style="display:none" onchange="App.importLocalFolder(this.files)">' +
-          '</label>' +
         '</div>';
     } else {
       actions =
@@ -302,7 +316,7 @@
 
     renderStatus(
       'Загрузка DEV',
-      'Скачивание файлов из ветки dev...',
+      'Скачивание файлов...',
       false,
       null,
       0
@@ -422,18 +436,23 @@
     }
 
     return runScript(0).then(function() {
-      modules.forEach(function(module, id) {
-        if (!module || typeof module.init !== 'function') return;
+      return FileDB.getMeta('disabled_modules').then(function(disabledModules) {
+        var disabled = disabledModules || [];
 
-        try {
-          module.init();
-        } catch (error) {
-          console.error('Ошибка инициализации модуля ' + id, error);
+        modules.forEach(function(module, id) {
+          if (!module || typeof module.init !== 'function') return;
+          if (disabled.indexOf(id) !== -1) return;
 
-          if (window.Shell && Shell.notify) {
-            Shell.notify('Модуль "' + id + '" не запустился', true);
+          try {
+            module.init();
+          } catch (error) {
+            console.error('Ошибка инициализации модуля ' + id, error);
+
+            if (window.Shell && Shell.notify) {
+              Shell.notify('Модуль "' + id + '" не запустился', true);
+            }
           }
-        }
+        });
       });
     });
   }
@@ -469,19 +488,29 @@
   function startDev() {
     var source = getDevSource();
 
-    return FileDB.getMeta('manifest_dev').then(function(manifest) {
-      if (source === 'local' && manifest) {
-        return FileDB.getAllFiles('dev').then(function(files) {
-          if (files.length) {
-            return mountBundle(manifest, files);
-          }
+    if (source === 'local') {
+      return loadDevFromLocalServer();
+    }
 
-          return loadDevFromGitHub();
+    return loadDevFromGitHub();
+  }
+
+  function loadDevFromLocalServer() {
+    renderStatus(
+      'Локальная разработка',
+      'Чтение manifest.json из папки проекта...',
+      false
+    );
+
+    return fetchTimeout('./manifest.json?t=' + Date.now())
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(manifest) {
+        return downloadFiles('./', manifest).then(function(files) {
+          return mountBundle(manifest, files);
         });
-      }
-
-      return loadDevFromGitHub();
-    });
+      });
   }
 
   function loadDevFromGitHub() {
@@ -507,7 +536,7 @@
   }
 
   function startProd() {
-    renderStatus('FITNESS ELITE', 'Инициализация ядra...', false);
+    renderStatus('FITNESS ELITE', 'Инициализация ядра...', false);
 
     return FileDB.getMeta('manifest_prod').then(function(manifest) {
       if (manifest) {
