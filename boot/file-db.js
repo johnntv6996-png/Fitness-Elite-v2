@@ -8,27 +8,58 @@
 
   function openDB() {
     return new Promise(function(resolve, reject) {
-      if (dbInstance) { resolve(dbInstance); return; }
-      var req = indexedDB.open(DB_NAME, DB_VERSION);
+      if (dbInstance) {
+        resolve(dbInstance);
+        return;
+      }
 
-      req.onupgradeneeded = function(e) {
-        var db = e.target.result;
-        if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', { keyPath: 'key' });
-        if (!db.objectStoreNames.contains('prod_files')) db.createObjectStore('prod_files', { keyPath: 'path' });
-        if (!db.objectStoreNames.contains('dev_files')) db.createObjectStore('dev_files', { keyPath: 'path' });
+      var request = indexedDB.open(DB_NAME, DB_VERSION);
+
+      request.onupgradeneeded = function(event) {
+        var db = event.target.result;
+
+        if (!db.objectStoreNames.contains('meta')) {
+          db.createObjectStore('meta', { keyPath: 'key' });
+        }
+
+        if (!db.objectStoreNames.contains('prod_files')) {
+          db.createObjectStore('prod_files', { keyPath: 'path' });
+        }
+
+        if (!db.objectStoreNames.contains('dev_files')) {
+          db.createObjectStore('dev_files', { keyPath: 'path' });
+        }
       };
 
-      req.onsuccess = function(e) { dbInstance = e.target.result; resolve(dbInstance); };
-      req.onerror = function(e) { reject(new Error('IndexedDB error: ' + (e.target.error && e.target.error.message))); };
+      request.onsuccess = function(event) {
+        dbInstance = event.target.result;
+        resolve(dbInstance);
+      };
+
+      request.onerror = function(event) {
+        reject(new Error('IndexedDB error: ' + (event.target.error && event.target.error.message)));
+      };
     });
+  }
+
+  function getStoreName(env) {
+    return env === 'dev' ? 'dev_files' : 'prod_files';
   }
 
   function getMeta(key) {
     return openDB().then(function(db) {
       return new Promise(function(resolve, reject) {
-        var req = db.transaction('meta', 'readonly').objectStore('meta').get(key);
-        req.onsuccess = function() { resolve(req.result ? req.result.value : null); };
-        req.onerror = function() { reject(req.error); };
+        var request = db.transaction('meta', 'readonly')
+          .objectStore('meta')
+          .get(key);
+
+        request.onsuccess = function() {
+          resolve(request.result ? request.result.value : null);
+        };
+
+        request.onerror = function() {
+          reject(request.error);
+        };
       });
     });
   }
@@ -36,80 +67,129 @@
   function setMeta(key, value) {
     return openDB().then(function(db) {
       return new Promise(function(resolve, reject) {
-        var tx = db.transaction('meta', 'readwrite');
-        tx.objectStore('meta').put({ key: key, value: value });
-        tx.oncomplete = function() { resolve(true); };
-        tx.onerror = function() { reject(tx.error); };
+        var transaction = db.transaction('meta', 'readwrite');
+
+        transaction.objectStore('meta').put({
+          key: key,
+          value: value
+        });
+
+        transaction.oncomplete = function() {
+          resolve(true);
+        };
+
+        transaction.onerror = function() {
+          reject(transaction.error);
+        };
       });
     });
   }
 
-  function saveFiles(env, filesList) {
-    var store = env === 'dev' ? 'dev_files' : 'prod_files';
+  function saveFiles(env, files) {
+    var storeName = getStoreName(env);
+
     return openDB().then(function(db) {
       return new Promise(function(resolve, reject) {
-        var tx = db.transaction(store, 'readwrite');
-        var os = tx.objectStore(store);
-        for (var i = 0; i < filesList.length; i++) os.put(filesList[i]);
-        tx.oncomplete = function() { resolve(true); };
-        tx.onerror = function() { reject(tx.error); };
+        var transaction = db.transaction(storeName, 'readwrite');
+        var store = transaction.objectStore(storeName);
+
+        for (var i = 0; i < files.length; i++) {
+          store.put(files[i]);
+        }
+
+        transaction.oncomplete = function() {
+          resolve(true);
+        };
+
+        transaction.onerror = function() {
+          reject(transaction.error);
+        };
       });
     });
   }
 
   function getAllFiles(env) {
-    var store = env === 'dev' ? 'dev_files' : 'prod_files';
+    var storeName = getStoreName(env);
+
     return openDB().then(function(db) {
       return new Promise(function(resolve, reject) {
-        var req = db.transaction(store, 'readonly').objectStore(store).getAll();
-        req.onsuccess = function() { resolve(req.result || []); };
-        req.onerror = function() { reject(req.error); };
+        var request = db.transaction(storeName, 'readonly')
+          .objectStore(storeName)
+          .getAll();
+
+        request.onsuccess = function() {
+          resolve(request.result || []);
+        };
+
+        request.onerror = function() {
+          reject(request.error);
+        };
       });
     });
   }
 
   function clearEnv(env) {
-    var store = env === 'dev' ? 'dev_files' : 'prod_files';
+    var storeName = getStoreName(env);
+
     return openDB().then(function(db) {
       return new Promise(function(resolve, reject) {
-        var tx = db.transaction(store, 'readwrite');
-        tx.objectStore(store).clear();
-        tx.oncomplete = function() { resolve(true); };
-        tx.onerror = function() { reject(tx.error); };
+        var transaction = db.transaction(storeName, 'readwrite');
+
+        transaction.objectStore(storeName).clear();
+
+        transaction.oncomplete = function() {
+          resolve(true);
+        };
+
+        transaction.onerror = function() {
+          reject(transaction.error);
+        };
       });
     });
   }
 
-  function saveSingleFile(env, fileObj) {
-    return saveFiles(env, [fileObj]);
+  function saveSingleFile(env, file) {
+    return saveFiles(env, [file]);
   }
 
   function copyProdToDev() {
-    return Promise.all([getMeta('manifest_prod'), getAllFiles('prod')])
-      .then(function(res) {
-        var manifest = res.shift();
-        var files = res.shift();
-        if (!manifest || !files || !files.length) throw new Error('В PROD нет файлов для копирования');
-        return clearEnv('dev').then(function() {
-          return saveFiles('dev', files);
-        }).then(function() {
-          return setMeta('manifest_dev', JSON.parse(JSON.stringify(manifest)));
-        });
+    return Promise.all([
+      getMeta('manifest_prod'),
+      getAllFiles('prod')
+    ]).then(function(result) {
+      var manifest = result[0];
+      var files = result[1];
+
+      if (!manifest || !files.length) {
+        throw new Error('В PROD нет файлов для копирования');
+      }
+
+      return clearEnv('dev').then(function() {
+        return saveFiles('dev', files);
+      }).then(function() {
+        return setMeta('manifest_dev', JSON.parse(JSON.stringify(manifest)));
       });
+    });
   }
 
   function copyDevToProd() {
-    return Promise.all([getMeta('manifest_dev'), getAllFiles('dev')])
-      .then(function(res) {
-        var manifest = res.shift();
-        var files = res.shift();
-        if (!manifest || !files || !files.length) throw new Error('В DEV нет файлов для переноса');
-        return clearEnv('prod').then(function() {
-          return saveFiles('prod', files);
-        }).then(function() {
-          return setMeta('manifest_prod', JSON.parse(JSON.stringify(manifest)));
-        });
+    return Promise.all([
+      getMeta('manifest_dev'),
+      getAllFiles('dev')
+    ]).then(function(result) {
+      var manifest = result[0];
+      var files = result[1];
+
+      if (!manifest || !files.length) {
+        throw new Error('В DEV нет файлов для переноса');
+      }
+
+      return clearEnv('prod').then(function() {
+        return saveFiles('prod', files);
+      }).then(function() {
+        return setMeta('manifest_prod', JSON.parse(JSON.stringify(manifest)));
       });
+    });
   }
 
   window.FileDB = {
