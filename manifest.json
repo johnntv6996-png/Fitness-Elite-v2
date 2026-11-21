@@ -1,5 +1,5 @@
 {
-  "version": "1.6.2-dev",
+  "version": "1.6.3-dev",
   "files": [
     { "path": "assets/fonts/Inter_18pt-Light.ttf", "type": "font", "required": false },
     { "path": "assets/fonts/Inter_18pt-Regular.ttf", "type": "font", "required": false },
