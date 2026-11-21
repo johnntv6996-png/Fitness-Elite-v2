@@ -6,11 +6,9 @@
   var REPO = 'Fitness-Elite-v2';
 
   var PROD_BASE = 'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/main/';
-  var DEV_BASE = 'https://raw.githubusercontent.com/' + OWNER + '/' + REPO + '/dev/';
-  var DEV_BRANCH_URL = 'https://github.com/' + OWNER + '/' + REPO + '/tree/dev';
+  var DEV_ZIP_URL = 'https://github.com/' + OWNER + '/' + REPO + '/archive/refs/heads/dev.zip';
 
   var ENV_KEY = 'fe_v2_env';
-  var DEV_SOURCE_KEY = 'fe_dev_source';
 
   function detectEnv() {
     try {
@@ -34,23 +32,6 @@
 
   var CURRENT_ENV = detectEnv();
   var modules = new Map();
-
-  function getDevSource() {
-    try {
-      return localStorage.getItem(DEV_SOURCE_KEY) === 'local' ? 'local' : 'online';
-    } catch (error) {
-      return 'online';
-    }
-  }
-
-  function setDevSource(source) {
-    try {
-      localStorage.setItem(
-        DEV_SOURCE_KEY,
-        source === 'local' ? 'local' : 'online'
-      );
-    } catch (error) {}
-  }
 
   window.App = {
     env: CURRENT_ENV,
@@ -77,154 +58,10 @@
       location.reload();
     },
 
-    getDevSource: getDevSource,
-
-    reloadDevFromGitHub: function() {
-      if (CURRENT_ENV !== 'dev') return;
-
-      setDevSource('online');
-      location.reload();
-    },
-
-    updateDevFromGitHub: function() {
-      if (CURRENT_ENV !== 'dev') {
-        return Promise.reject(new Error('Обновление доступно только в DEV'));
-      }
-
-      return fetchTimeout(DEV_BASE + 'manifest.json?t=' + Date.now())
-        .then(function(response) {
-          return response.json();
-        })
-        .then(function(manifest) {
-          return downloadFiles(DEV_BASE, manifest).then(function(files) {
-            return FileDB.saveFiles('dev', files).then(function() {
-              return FileDB.setMeta('manifest_dev', manifest);
-            });
-          });
-        });
-    },
-
-    openDevBranch: function() {
-      window.open(DEV_BRANCH_URL, '_blank');
-    },
-
-    importLocalFolder: function(fileList) {
-      if (CURRENT_ENV !== 'dev') return;
-
-      if (!fileList || !fileList.length) {
-        renderStatus('Импорт отменён', 'Папка не выбрана', true);
-        return;
-      }
-
-      var filesByPath = {};
-
-      for (var i = 0; i < fileList.length; i++) {
-        var parts = fileList[i].webkitRelativePath.split('/');
-        parts.shift();
-
-        var relativePath = parts.join('/');
-
-        if (relativePath) {
-          filesByPath[relativePath] = fileList[i];
-        }
-      }
-
-      if (!filesByPath['manifest.json']) {
-        renderStatus(
-          'Ошибка импорта',
-          'В выбранной папке нет manifest.json',
-          true
-        );
-        return;
-      }
-
-      filesByPath['manifest.json'].text().then(function(text) {
-        var manifest;
-
-        try {
-          manifest = JSON.parse(text);
-        } catch (error) {
-          renderStatus(
-            'Ошибка импорта',
-            'manifest.json содержит некорректный JSON',
-            true
-          );
-          return;
-        }
-
-        return importLocalBundle(manifest, filesByPath);
-      }).catch(function(error) {
-        renderStatus(
-          'Ошибка импорта',
-          error && error.message ? error.message : 'Не удалось импортировать файлы',
-          true
-        );
-      });
+    downloadDevZip: function() {
+      window.open(DEV_ZIP_URL, '_blank');
     }
   };
-
-  function importLocalBundle(manifest, filesByPath) {
-    var entries = manifest.files || [];
-    var total = entries.length;
-    var completed = 0;
-    var missing = [];
-    var records = [];
-
-    renderStatus('Импорт DEV', 'Чтение локальных файлов...', false, null, 0);
-
-    var jobs = entries.map(function(entry) {
-      var file = filesByPath[entry.path];
-
-      if (!file) {
-        if (entry.required) {
-          missing.push(entry.path);
-        }
-
-        completed++;
-        updateProgress(completed, total);
-        return Promise.resolve();
-      }
-
-      var reader = entry.type === 'font'
-        ? Promise.resolve(file)
-        : file.text();
-
-      return reader.then(function(content) {
-        records.push({
-          path: entry.path,
-          type: entry.type,
-          id: entry.id || null,
-          required: !!entry.required,
-          content: content,
-          version: manifest.version
-        });
-
-        completed++;
-        updateProgress(completed, total, entry.path);
-      });
-    });
-
-    return Promise.all(jobs).then(function() {
-      if (missing.length) {
-        renderStatus(
-          'Не хватает файлов',
-          'Выбери корневую папку проекта, где лежит manifest.json',
-          true,
-          missing
-        );
-        return;
-      }
-
-      return FileDB.saveFiles('dev', records)
-        .then(function() {
-          return FileDB.setMeta('manifest_dev', manifest);
-        })
-        .then(function() {
-          setDevSource('local');
-          location.reload();
-        });
-    });
-  }
 
   function renderStatus(title, subtitle, isError, missingList, progress) {
     var root = document.getElementById('app');
@@ -247,17 +84,9 @@
           '<strong>Не найдены:</strong><br>' + missingList.join('<br>') + '</div>'
       : '';
 
-    var actions = '';
-
-    if (CURRENT_ENV === 'dev') {
-      actions =
-        '<div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;max-width:320px;width:100%">' +
-          '<button onclick="App.reloadDevFromGitHub()" style="padding:12px;border-radius:10px;border:1px solid #d4af37;background:transparent;color:#d4af37;font-weight:700">Загрузить из ветки dev</button>' +
-        '</div>';
-    } else {
-      actions =
-        '<button onclick="location.reload()" style="margin-top:16px;padding:12px 22px;border-radius:10px;border:none;background:#d4af37;color:#000;font-weight:700">Повторить</button>';
-    }
+    var actions = CURRENT_ENV === 'dev'
+      ? '<button onclick="App.downloadDevZip()" style="margin-top:16px;padding:12px 22px;border-radius:10px;border:1px solid #d4af37;background:transparent;color:#d4af37;font-weight:700">Скачать ZIP ветки dev</button>'
+      : '<button onclick="location.reload()" style="margin-top:16px;padding:12px 22px;border-radius:10px;border:none;background:#d4af37;color:#000;font-weight:700">Повторить</button>';
 
     root.innerHTML =
       '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center">' +
@@ -315,8 +144,8 @@
     var missing = [];
 
     renderStatus(
-      'Загрузка DEV',
-      'Скачивание файлов...',
+      'Загрузка',
+      'Чтение файлов проекта...',
       false,
       null,
       0
@@ -436,23 +265,18 @@
     }
 
     return runScript(0).then(function() {
-      return FileDB.getMeta('disabled_modules').then(function(disabledModules) {
-        var disabled = disabledModules || [];
+      modules.forEach(function(module, id) {
+        if (!module || typeof module.init !== 'function') return;
 
-        modules.forEach(function(module, id) {
-          if (!module || typeof module.init !== 'function') return;
-          if (disabled.indexOf(id) !== -1) return;
+        try {
+          module.init();
+        } catch (error) {
+          console.error('Ошибка инициализации модуля ' + id, error);
 
-          try {
-            module.init();
-          } catch (error) {
-            console.error('Ошибка инициализации модуля ' + id, error);
-
-            if (window.Shell && Shell.notify) {
-              Shell.notify('Модуль "' + id + '" не запустился', true);
-            }
+          if (window.Shell && Shell.notify) {
+            Shell.notify('Модуль "' + id + '" не запустился', true);
           }
-        });
+        }
       });
     });
   }
@@ -470,13 +294,15 @@
 
         if (window.Shell && typeof Shell.showUpdateToast === 'function') {
           Shell.showUpdateToast(currentVersion, remoteManifest, function() {
-            return downloadFiles(PROD_BASE, remoteManifest).then(function(files) {
-              return FileDB.clearEnv('prod').then(function() {
-                return FileDB.saveFiles('prod', files);
-              }).then(function() {
-                return FileDB.setMeta('manifest_prod', remoteManifest);
-              }).then(function() {
-                location.reload();
+            return FileDB.getMeta('manifest_prod').then(function(oldManifest) {
+              return downloadFiles(PROD_BASE, remoteManifest).then(function(files) {
+                return FileDB.clearEnv('prod').then(function() {
+                  return FileDB.saveFiles('prod', files);
+                }).then(function() {
+                  return FileDB.setMeta('manifest_prod', remoteManifest);
+                }).then(function() {
+                  location.reload();
+                });
               });
             });
           });
@@ -486,16 +312,6 @@
   }
 
   function startDev() {
-    var source = getDevSource();
-
-    if (source === 'local') {
-      return loadDevFromLocalServer();
-    }
-
-    return loadDevFromGitHub();
-  }
-
-  function loadDevFromLocalServer() {
     renderStatus(
       'Локальная разработка',
       'Чтение manifest.json из папки проекта...',
@@ -509,28 +325,6 @@
       .then(function(manifest) {
         return downloadFiles('./', manifest).then(function(files) {
           return mountBundle(manifest, files);
-        });
-      });
-  }
-
-  function loadDevFromGitHub() {
-    renderStatus(
-      'Загрузка DEV',
-      'Получение manifest.json из ветки dev...',
-      false
-    );
-
-    return fetchTimeout(DEV_BASE + 'manifest.json?t=' + Date.now())
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(manifest) {
-        return downloadFiles(DEV_BASE, manifest).then(function(files) {
-          return FileDB.saveFiles('dev', files).then(function() {
-            return FileDB.setMeta('manifest_dev', manifest);
-          }).then(function() {
-            return mountBundle(manifest, files);
-          });
         });
       });
   }
