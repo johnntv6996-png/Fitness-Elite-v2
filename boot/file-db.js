@@ -148,6 +148,26 @@
     });
   }
 
+  function deleteFile(env, path) {
+    var storeName = getStoreName(env);
+
+    return openDB().then(function(db) {
+      return new Promise(function(resolve, reject) {
+        var transaction = db.transaction(storeName, 'readwrite');
+
+        transaction.objectStore(storeName).delete(path);
+
+        transaction.oncomplete = function() {
+          resolve(true);
+        };
+
+        transaction.onerror = function() {
+          reject(transaction.error);
+        };
+      });
+    });
+  }
+
   function saveSingleFile(env, file) {
     return saveFiles(env, [file]);
   }
@@ -199,6 +219,7 @@
     saveSingleFile: saveSingleFile,
     getAllFiles: getAllFiles,
     clearEnv: clearEnv,
+    deleteFile: deleteFile,
     copyProdToDev: copyProdToDev,
     copyDevToProd: copyDevToProd
   };
